@@ -27,6 +27,23 @@ public class ApiFactory : WebApplicationFactory<Program>
         HandleCookies = true
     });
 
+    // Signs up a brand-new organization; returns the Owner's logged-in client
+    public async Task<HttpClient> SignupNewOrg(string categories = "Truck", string unit = "km")
+    {
+        var client = NewClient();
+        var res = await client.PostAsJsonAsync("/api/auth/signup", new
+        {
+            organization_name = "Test Org " + Guid.NewGuid().ToString("N")[..6],
+            owner_name = "Test Owner",
+            email = $"{Guid.NewGuid():N}@owner.test",
+            password = "LongEnough1",
+            distance_unit = unit,
+            template_categories = categories.Split(',')
+        });
+        res.EnsureSuccessStatusCode();
+        return client;
+    }
+
     // Returns a client holding the login cookie for this user
     public async Task<HttpClient> LoginAs(string email, string password = SeedTests.DemoPassword)
     {
