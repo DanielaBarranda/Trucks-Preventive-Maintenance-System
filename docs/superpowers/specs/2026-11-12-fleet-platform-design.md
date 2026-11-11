@@ -57,21 +57,47 @@ The original `Starqueen_PMTS` LocalDB stays untouched as an archive. The old pro
 | `MaintenanceSchedules` | id, organization_id, vehicle_type_id, task, km_warning, km_replace, km_overdue, month_interval | Replaces `Maintenance_Reference` |
 | `OdometerReadings` | id, organization_id, vehicle_id, driver_id, reading, recorded_at | |
 | `Trips` | id, organization_id, vehicle_id, driver_id, trip_date, pickup_location, pickup_address, destination, scheduled_time, departed_at, arrived_at | Replaces `Truck_Activity`; generalized fields; driver is an account, not free text |
-| `Expenses` | id, organization_id, vehicle_id, driver_id, expense_date, category, amount, notes, process_photo, receipt_photo | |
-| `MaintenanceLogs` | id, organization_id, vehicle_id, schedule_id, status, reading_at_log, resolved, resolved_at, created_by, created_at | |
+| `Expenses` | id, organization_id, vehicle_id, driver_id, schedule_id (nullable), expense_date, category, amount, notes, process_photo, receipt_photo | Photos stored outside the public web root, per organization, and served only through an authorized endpoint |
+| `MaintenanceLogs` | id, organization_id, vehicle_id, schedule_id, status (`Warning`/`Replace`/`Overdue`/`Done`), reading_at_log, resolved, resolved_at, created_by, created_at | Open alerts and service history (`Done` rows) |
 | `Notifications` | id, organization_id, vehicle_id, maintenance_log_id, type (`Urgent`/`Warning`/`Information`), message, task, is_read, is_resolved, resolved_at, created_at | Replaces `Admin_Notifications` |
 
 Dropped: `Truck_Notifications` (empty, unused).
 
 Distances are stored in the organization's chosen unit; the UI labels them with it.
 
-### 3.2 Views and stored procedures
+### 3.2 Reports (stored procedures)
 
-The 16 project stored procedures and 9 views are rebuilt with the new names (the
-other 7 procedures in the old database are SQL Server diagram helpers and are not
-carried over). They keep the same purpose (alert detection, cost per month/year,
-driver performance, near-replacement, etc.), and are covered by Row-Level Security
-like every other query.
+The old database's 16 project procedures and 9 views overlap heavily (for example,
+monthly min, max and total cost are three procedures) and one reads the dropped
+`Truck_Notifications` table. They are consolidated into four report procedures that
+return the same information, all covered by Row-Level Security:
+
+| Procedure | Replaces | Returns per row |
+|---|---|---|
+| `rpt_FleetOverview` | dashboard overview, expense analysis | vehicle, latest reading, total/min/max/count of expenses, last expense date, open alerts, unread notifications, last trip |
+| `rpt_MaintenanceStatus` | maintenance view, alert detection, overdue, good-status, total components, near-replacement, oldest components | vehicle × schedule: last service date/reading, distance and months since, status (`Good`/`Warning`/`Replace`/`Overdue`/`No Data`) |
+| `rpt_MonthlyExpenses` | monthly total/min/max, yearly total | vehicle, year, month, total, min, max, count |
+| `rpt_DriverActivity` | driver performance, first/last trip | driver, vehicle, trips, departures, arrivals, distinct destinations, expenses, first and last trip |
+
+### 3.2.1 Maintenance status rules
+- Thresholds (`km_warning`, `km_replace`, `km_overdue`, `month_interval`) are measured
+  **since the last service**, not as absolute odometer values. The old app compared
+  against absolute readings, so a vehicle stayed "overdue" forever after its first
+  service.
+- Last service = the latest `MaintenanceLogs` row with status `Done` for that vehicle
+  and schedule (its reading and date). With no service yet: reading 0 and the
+  vehicle's `created_at`.
+- Distance status: `Overdue` if distance ≥ km_overdue, else `Replace` if ≥ km_replace,
+  else `Warning` if ≥ km_warning, else `Good`. With no odometer reading: `No Data`.
+- Month status (when `month_interval` is set): whole months since last service ≥
+  interval + 1 → `Overdue`; ≥ interval → `Replace`; ≥ 80% of interval (rounded down)
+  → `Warning`. The worse of distance and month status wins.
+- A service is recorded either by an admin (`POST /api/vehicles/{id}/services`) or by
+  a driver's expense linked to a schedule (`Expenses.schedule_id`). Recording a
+  service resolves that schedule's open alerts. No more guessing from free-text
+  expense categories.
+- Template thresholds are stored in km; when an organization uses miles, sign-up
+  converts them (× 0.621371, rounded to the nearest 100).
 
 ### 3.3 Tenant isolation (Row-Level Security)
 
