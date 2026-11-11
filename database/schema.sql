@@ -218,3 +218,159 @@ CREATE TABLE dbo.Notifications (
     CONSTRAINT FK_Notifications_log     FOREIGN KEY (organization_id, maintenance_log_id) REFERENCES dbo.MaintenanceLogs(organization_id, id)
 );
 GO
+
+/* =====================================================================
+   DEFAULT MAINTENANCE TEMPLATES (km). Copied into an organization at sign-up.
+   ===================================================================== */
+INSERT dbo.ScheduleTemplates (category, task, km_warning, km_replace, km_overdue, month_interval) VALUES
+ (N'Truck', N'Engine Oil & Filter Replacement',        15200, 19000, 19001, 3),
+ (N'Truck', N'Fuel Filter Replacement',                32000, 40000, 40001, 6),
+ (N'Truck', N'Air Filter Cleaning / Replacement',      32000, 40000, 40001, 6),
+ (N'Truck', N'Brake System Inspection & Adjustment',   15200, 19000, 19001, 6),
+ (N'Truck', N'Tire Pressure & Condition Check',        10200, 12800, 12801, 6),
+ (N'Truck', N'Chassis & Suspension Lubrication',       10200, 12800, 12801, 6),
+ (N'Truck', N'Coolant Level & Condition Check',        32000, 40000, 40001, 6),
+ (N'Truck', N'Transmission Fluid Check',               32000, 40000, 40001, 12),
+ (N'Truck', N'Differential / Drivetrain Inspection',   64000, 80000, 80001, 6),
+ (N'Truck', N'Battery & Electrical System Check',      40000, 50000, 50001, 12),
+ (N'Van & Car', N'Engine Oil & Filter Replacement',     8000, 10000, 10001, 6),
+ (N'Van & Car', N'Air Filter Replacement',             16000, 20000, 20001, 12),
+ (N'Van & Car', N'Brake Inspection',                    8000, 10000, 10001, 6),
+ (N'Van & Car', N'Tire Rotation & Pressure Check',      8000, 10000, 10001, 6),
+ (N'Van & Car', N'Coolant Check',                      32000, 40000, 40001, 24),
+ (N'Van & Car', N'Battery & Electrical Check',         32000, 40000, 40001, 12),
+ (N'Motorcycle', N'Engine Oil Change',                  2400,  3000,  3001, 3),
+ (N'Motorcycle', N'Chain Cleaning & Lubrication',        800,  1000,  1001, 1),
+ (N'Motorcycle', N'Brake Pads Inspection',              4000,  5000,  5001, 6),
+ (N'Motorcycle', N'Spark Plug Replacement',             6400,  8000,  8001, 12),
+ (N'Motorcycle', N'Air Filter Cleaning',                4000,  5000,  5001, 6),
+ (N'Motorcycle', N'Tire Pressure & Condition Check',     800,  1000,  1001, 1);
+GO
+
+/* =====================================================================
+   ROW-LEVEL SECURITY
+   The API sets SESSION_CONTEXT('organization_id') on every connection.
+   Rows of other organizations are invisible and cannot be written.
+   Only the two auth.* procedures (running as rls_auth) see across
+   organizations, for login and sign-up.
+   ===================================================================== */
+CREATE SCHEMA security;
+GO
+CREATE SCHEMA auth;
+GO
+CREATE USER rls_auth WITHOUT LOGIN;
+GO
+
+CREATE FUNCTION security.fn_TenantPredicate (@organization_id INT)
+RETURNS TABLE
+WITH SCHEMABINDING
+AS
+RETURN
+    SELECT 1 AS ok
+    WHERE @organization_id = CAST(SESSION_CONTEXT(N'organization_id') AS int)
+       OR USER_NAME() = N'rls_auth';
+GO
+
+CREATE SECURITY POLICY security.TenantPolicy
+    ADD FILTER PREDICATE security.fn_TenantPredicate(id)              ON dbo.Organizations,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(id)              ON dbo.Organizations AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Users,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Users AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Users AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.VehicleTypes,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.VehicleTypes AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.VehicleTypes AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Vehicles,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Vehicles AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Vehicles AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceSchedules,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceSchedules AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceSchedules AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.OdometerReadings,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.OdometerReadings AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.OdometerReadings AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Trips,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Trips AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Trips AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Expenses,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Expenses AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Expenses AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceLogs,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceLogs AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.MaintenanceLogs AFTER UPDATE,
+    ADD FILTER PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Notifications,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Notifications AFTER INSERT,
+    ADD BLOCK  PREDICATE security.fn_TenantPredicate(organization_id) ON dbo.Notifications AFTER UPDATE
+    WITH (STATE = ON);
+GO
+
+/* ---------- Pre-login procedures (the only cross-organization path) ---------- */
+
+-- Login: find a user by email in any organization
+CREATE PROCEDURE auth.FindUserByEmail
+    @email NVARCHAR(255)
+WITH EXECUTE AS 'rls_auth'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT id, organization_id, full_name, email, password_hash, role, must_change_password, is_active
+    FROM dbo.Users
+    WHERE email = @email;
+END
+GO
+
+-- Sign-up: create an organization, its Owner, vehicle types and schedules
+CREATE PROCEDURE auth.CreateOrganization
+    @org_name            NVARCHAR(100),
+    @currency_code       CHAR(3),
+    @distance_unit       VARCHAR(2),
+    @owner_name          NVARCHAR(100),
+    @email               NVARCHAR(255),
+    @password_hash       NVARCHAR(255),
+    @template_categories NVARCHAR(200)
+WITH EXECUTE AS 'rls_auth'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    IF EXISTS (SELECT 1 FROM dbo.Users WHERE email = @email)
+        THROW 50001, N'Email is already registered.', 1;
+
+    BEGIN TRANSACTION;
+
+    DECLARE @org_id INT, @user_id INT;
+
+    INSERT dbo.Organizations (name, currency_code, distance_unit)
+    VALUES (@org_name, @currency_code, @distance_unit);
+    SET @org_id = SCOPE_IDENTITY();
+
+    INSERT dbo.Users (organization_id, full_name, email, password_hash, role)
+    VALUES (@org_id, @owner_name, @email, @password_hash, 'Owner');
+    SET @user_id = SCOPE_IDENTITY();
+
+    DECLARE @types TABLE (id INT, name NVARCHAR(50));
+
+    INSERT dbo.VehicleTypes (organization_id, name)
+    OUTPUT INSERTED.id, INSERTED.name INTO @types
+    SELECT DISTINCT @org_id, LTRIM(RTRIM(value))
+    FROM STRING_SPLIT(@template_categories, ',')
+    WHERE LTRIM(RTRIM(value)) IN (N'Truck', N'Van & Car', N'Motorcycle');
+
+    -- Templates are in km; convert for organizations that use miles
+    -- (x 0.621371, rounded to the nearest 100)
+    INSERT dbo.MaintenanceSchedules
+        (organization_id, vehicle_type_id, task, km_warning, km_replace, km_overdue, month_interval)
+    SELECT @org_id, t.id, st.task,
+           CASE WHEN @distance_unit = 'mi' THEN CAST(ROUND(st.km_warning * 0.621371, -2) AS INT) ELSE st.km_warning END,
+           CASE WHEN @distance_unit = 'mi' THEN CAST(ROUND(st.km_replace * 0.621371, -2) AS INT) ELSE st.km_replace END,
+           CASE WHEN @distance_unit = 'mi' THEN CAST(ROUND(st.km_overdue * 0.621371, -2) AS INT) ELSE st.km_overdue END,
+           st.month_interval
+    FROM @types t
+    JOIN dbo.ScheduleTemplates st ON st.category = t.name;
+
+    COMMIT;
+
+    SELECT @org_id AS organization_id, @user_id AS user_id;
+END
+GO
