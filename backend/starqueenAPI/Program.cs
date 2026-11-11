@@ -1,55 +1,51 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileProviders;
+using starqueen.Auth;
 using starqueen.Data;
 using starqueen.Repositories;
 using starqueen.Services;
+using starqueenAPI.Infrastructure;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database ──────────────────────────────────────────────────
-// Connection string lives in appsettings.json → ConnectionStrings:DefaultConnection
+// Database columns are snake_case; C# properties are PascalCase
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+// ── Tenant context + database ─────────────────────────────────
+// Every connection is scoped to the logged-in user's organization (Row-Level Security).
+// Connection string: appsettings.json → ConnectionStrings:DefaultConnection
 // (override per machine with user secrets or ConnectionStrings__DefaultConnection env var)
-builder.Services.AddSingleton<IDbConnectionFactory>(
-    new SqlConnectionFactory(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantContext, HttpTenantContext>();
+builder.Services.AddScoped<IDbConnectionFactory>(sp => new SqlConnectionFactory(
+    sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection"),
+    sp.GetRequiredService<ITenantContext>()));
 
-// ── Repositories ──────────────────────────────────────────────
-builder.Services.AddScoped<AdminMaintenanceViewRepository>();
-builder.Services.AddScoped<AdminNotificationsRepository>();
-builder.Services.AddScoped<MaintenanceReferenceRepository>();
-builder.Services.AddScoped<TruckActivityRepository>();
-builder.Services.AddScoped<TruckExpensesRepository>();
-builder.Services.AddScoped<TruckMaintenanceLogsRepository>();
-builder.Services.AddScoped<TruckNotificationsRepository>();
-builder.Services.AddScoped<TruckOdometerRepository>();
-builder.Services.AddScoped<TrucksRepository>();
-builder.Services.AddScoped<UsersRepository>();
-
-// ── Services ──────────────────────────────────────────────────
+// ── Repositories and services (every class in those namespaces) ──
 builder.Services.AddSingleton<PasswordService>();
-builder.Services.AddScoped<AdminMaintenanceViewServices>();
-builder.Services.AddScoped<AdminNotificationsServices>();
-builder.Services.AddScoped<MaintenanceReferenceServices>();
-builder.Services.AddScoped<TruckActivityServices>();
-builder.Services.AddScoped<TruckExpensesServices>();
-builder.Services.AddScoped<TruckMaintenanceLogsServices>();
-builder.Services.AddScoped<TruckNotificationsServices>();
-builder.Services.AddScoped<TruckOdometerServices>();
-builder.Services.AddScoped<TrucksServices>();
-builder.Services.AddScoped<UsersServices>();
+foreach (var type in typeof(UserRepository).Assembly.GetTypes()
+             .Where(t => t is { IsClass: true, IsAbstract: false, IsPublic: true }
+                         && t != typeof(PasswordService)
+                         && (t.Namespace == typeof(UserRepository).Namespace
+                             || t.Namespace == typeof(PasswordService).Namespace)))
+{
+    builder.Services.AddScoped(type);
+}
 
 // ── Authentication: HttpOnly cookie issued by POST /api/auth/login ──
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = "starqueen.auth";
+        options.Cookie.Name = "fleet.auth";
         options.Cookie.HttpOnly = true;                       // not readable from JavaScript
         options.Cookie.SameSite = SameSiteMode.Strict;        // not sent on cross-site requests
         options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
-        options.ExpireTimeSpan = TimeSpan.FromHours(24);      // matches SessionManager in config.js
+        options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = false;
 
         // This is an API: answer 401/403 instead of redirecting to a login page
@@ -57,14 +53,19 @@ builder.Services
         options.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
     });
 
-// Every API endpoint requires a logged-in user unless marked [AllowAnonymous].
-// Static pages are served before this and stay public (they redirect to login themselves).
+// ── Authorization: RBAC ───────────────────────────────────────
+// Every endpoint requires login unless marked [AllowAnonymous].
+// One policy per permission: [Authorize(Policy = Permissions.VehiclesManage)]
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+    foreach (var permission in Permissions.All)
+        options.AddPolicy(permission, policy =>
+            policy.RequireAuthenticatedUser().RequireRole(Permissions.RolesWith(permission)));
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(o =>
+    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -82,14 +83,6 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-// ── One-time upgrade: hash any passwords still stored as plain text ──
-using (var scope = app.Services.CreateScope())
-{
-    int upgraded = scope.ServiceProvider.GetRequiredService<UsersServices>().HashLegacyPasswords();
-    if (upgraded > 0)
-        app.Logger.LogInformation("Hashed {Count} plain-text password(s).", upgraded);
-}
-
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
@@ -102,7 +95,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // ── Front end: serve the web/ folder at the site root ─────────
-// so https://localhost:7273/ opens the app and API calls are same-origin (no CORS needed).
 string webRoot = Path.GetFullPath(Path.Combine(
     app.Environment.ContentRootPath, app.Configuration["FrontEndPath"] ?? "../../web"));
 if (Directory.Exists(webRoot))
@@ -111,15 +103,12 @@ if (Directory.Exists(webRoot))
     app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = webFiles });
     app.UseStaticFiles(new StaticFileOptions { FileProvider = webFiles });
 }
-else
-{
-    app.Logger.LogWarning("Front-end folder not found at {Path}; only the API will be served.", webRoot);
-}
-
-// wwwroot/ — uploaded expense photos (/uploads/...)
-app.UseStaticFiles();
 
 app.UseAuthentication();
+app.UseMiddleware<PasswordChangeGate>();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+// Exposed for integration tests (WebApplicationFactory<Program>)
+public partial class Program { }

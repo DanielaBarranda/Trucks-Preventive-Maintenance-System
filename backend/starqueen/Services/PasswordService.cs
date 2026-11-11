@@ -7,7 +7,7 @@ namespace starqueen.Services
     // (PBKDF2, salted, versioned format). Plain-text passwords are never stored.
     public class PasswordService
     {
-        private readonly PasswordHasher<Users> _hasher = new();
+        private readonly PasswordHasher<User> _hasher = new();
 
         public string Hash(string password) => _hasher.HashPassword(null!, password);
 
