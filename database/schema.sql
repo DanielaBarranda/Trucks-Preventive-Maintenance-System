@@ -8,6 +8,8 @@
    schema.sql + seed.sql.
    ===================================================================== */
 SET NOCOUNT ON;
+SET QUOTED_IDENTIFIER ON;  -- required for filtered indexes (sqlcmd defaults it OFF)
+SET ANSI_NULLS ON;
 GO
 
 /* ---------- Drop existing objects (dependency order) ---------- */

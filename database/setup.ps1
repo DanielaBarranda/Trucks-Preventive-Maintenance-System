@@ -29,7 +29,7 @@ if ($LASTEXITCODE -ne 0) { throw "Could not create database $Database." }
 
 foreach ($script in @("schema.sql", "seed.sql")) {
     Write-Host "Running $script..."
-    sqlcmd -S $Server -d $Database -b -i (Join-Path $here $script)
+    sqlcmd -S $Server -d $Database -b -I -i (Join-Path $here $script)
     if ($LASTEXITCODE -ne 0) { throw "$script failed." }
 }
 
