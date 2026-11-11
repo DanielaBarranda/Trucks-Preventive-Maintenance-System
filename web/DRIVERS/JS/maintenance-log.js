@@ -124,12 +124,6 @@ function fmt(amount) {
     });
 }
 
-function escapeHtml(s) {
-    const div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
-}
-
 // ── Month-based status helper ─────────────────────────────────
 function getMonthStatus(lastSubmittedAt, monthInterval) {
     if (!lastSubmittedAt || !monthInterval) return null;

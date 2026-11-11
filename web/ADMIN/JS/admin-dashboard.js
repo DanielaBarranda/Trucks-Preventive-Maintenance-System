@@ -97,8 +97,8 @@ const UI = {
                     </svg>
                 </div>
                 <div class="alert-info">
-                    <h4>${alert.plate_number ?? '—'}</h4>
-                    <p>${alert.maintenance_item ?? '—'}${kmInfo ? ` · ${kmInfo}` : ''}</p>
+                    <h4>${escapeHtml(alert.plate_number ?? '—')}</h4>
+                    <p>${escapeHtml(alert.maintenance_item ?? '—')}${kmInfo ? ` · ${kmInfo}` : ''}</p>
                 </div>
                 <div class="alert-status">
                     <span class="badge ${badge}">${label}</span>
@@ -225,7 +225,7 @@ const DataManager = {
             const dedupKey     = new Set();
             const deduplicated = [];
             actionable.forEach(a => {
-                const key = `${a.plate_number}-${a.maintenance_item}`;
+                const key = `${escapeHtml(a.plate_number)}-${escapeHtml(a.maintenance_item)}`;
                 if (!dedupKey.has(key)) {
                     dedupKey.add(key);
                     deduplicated.push(a);
@@ -294,7 +294,7 @@ const DataManager = {
                 <div class="sp-fleet-grid">
                     ${merged.length ? merged.map(m => `
                         <div class="fleet-health-card">
-                            <div class="fleet-health-plate">${m.plate}</div>
+                            <div class="fleet-health-plate">${escapeHtml(m.plate)}</div>
                             <div class="fleet-health-bar-wrap">
                                 <div class="fleet-health-bar">
                                     <div class="fleet-health-bar-fill"

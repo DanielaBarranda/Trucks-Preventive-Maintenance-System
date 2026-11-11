@@ -3,7 +3,7 @@
 // ============================================================
 
 using Dapper;
-using Microsoft.Data.SqlClient;
+using starqueen.Data;
 using starqueen.Models;
 using System.Data;
 
@@ -11,16 +11,14 @@ namespace starqueen.Repositories
 {
     public class TruckExpensesRepository : GenericRepositories<Truck_Expenses>
     {
-        readonly string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=Starqueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
+        public TruckExpensesRepository(IDbConnectionFactory db) : base(db) { }
 
         // ── SP_Expense_Analysis_with_Monthly_Filtering ──────────────────────
         // Returns: total, count, max, min expense + latest date per truck
         // Used by: Expense Analysis table on Expenses page
         public List<ExpenseAnalysis> GetExpenseAnalysis()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<ExpenseAnalysis>(
                 "EXEC SP_Expense_Analysis_with_Monthly_Filtering"
             ).ToList();
@@ -31,7 +29,7 @@ namespace starqueen.Repositories
         // Used by: Monthly Cost table on Expenses page
         public List<MonthlyMaintenanceCost> GetMonthlyCost()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<MonthlyMaintenanceCost>(
                 "EXEC SP_Total_Monthly_Maintenance_Cost_Per_Trucks"
             ).ToList();
@@ -42,7 +40,7 @@ namespace starqueen.Repositories
         // Used by: Most Spent table on Expenses page
         public List<MostSpentPerMonth> GetMostSpentPerMonth()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<MostSpentPerMonth>(
                 "EXEC SP_Most_Spent_Truck_Maintenance_per_Month"
             ).ToList();
@@ -53,7 +51,7 @@ namespace starqueen.Repositories
         // Used by: Yearly Cost table on Expenses page
         public List<YearlyMaintenanceCost> GetYearlyCost()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<YearlyMaintenanceCost>(
                 "EXEC SP_Total_Yearly_Maintenance_Cost_Per_Truck"
             ).ToList();
@@ -64,7 +62,7 @@ namespace starqueen.Repositories
         // Used by: Minimum Monthly Cost table on Expenses page
         public List<MinMonthlyMaintenanceCost> GetMinMonthlyCost()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<MinMonthlyMaintenanceCost>(
                 "EXEC SP_Minimum_Monthly_Maintenance_Cost_Per_Truck"
             ).ToList();

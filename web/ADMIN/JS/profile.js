@@ -77,7 +77,7 @@ saveUsernameBtn?.addEventListener('click', async () => {
     saveUsernameBtn.textContent = 'Saving...';
 
     try {
-        const updated = { ...currentUser, username: newUsername };
+        const updated = { username: newUsername, email: currentUser?.email, role: currentUser?.role };
         const res = await fetch(`${CONFIG.API_BASE}/api/Users/${storedUserId}`, {
             method:  'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -111,9 +111,6 @@ savePasswordBtn?.addEventListener('click', async () => {
     if (!currentPw || !newPw || !confirmPw) {
         showFeedback(passwordFeedback, 'Please fill in all password fields.', 'error'); return;
     }
-    if (currentPw !== currentUser?.password) {
-        showFeedback(passwordFeedback, 'Current password is incorrect.', 'error'); return;
-    }
     if (newPw.length < 5) {
         showFeedback(passwordFeedback, 'New password must be at least 5 characters.', 'error'); return;
     }
@@ -125,21 +122,21 @@ savePasswordBtn?.addEventListener('click', async () => {
     savePasswordBtn.textContent = 'Saving...';
 
     try {
-        const updated = { ...currentUser, password: newPw };
-        const res = await fetch(`${CONFIG.API_BASE}/api/Users/${storedUserId}`, {
-            method:  'PUT',
+        // The server checks the current password (passwords are never sent to the browser)
+        const res = await fetch(`${CONFIG.API_BASE}/api/auth/change-password`, {
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(updated)
+            body:    JSON.stringify({ current_password: currentPw, new_password: newPw })
         });
 
         if (res.ok) {
-            currentUser.password       = newPw;
             currentPasswordInput.value = '';
             newPasswordInput.value     = '';
             confirmPasswordInput.value = '';
             showFeedback(passwordFeedback, '✓ Password changed successfully!', 'success');
         } else {
-            showFeedback(passwordFeedback, 'Failed to change password. Try again.', 'error');
+            const data = await res.json().catch(() => ({}));
+            showFeedback(passwordFeedback, data.message || 'Failed to change password. Try again.', 'error');
         }
     } catch (err) {
         showFeedback(passwordFeedback, 'Network error. Please try again.', 'error');

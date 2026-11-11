@@ -5,9 +5,14 @@ namespace starqueen.Services
 {
     public class TruckActivityServices
     {
-        public readonly TruckActivityRepository _truckActivityRepository = new TruckActivityRepository();
+        public readonly TruckActivityRepository _truckActivityRepository;
 
-        public Truck_Activity GetTruckActivityById(int id)
+        public TruckActivityServices(TruckActivityRepository truckActivityRepository)
+        {
+            _truckActivityRepository = truckActivityRepository;
+        }
+
+        public Truck_Activity? GetTruckActivityById(int id)
         {
             return _truckActivityRepository.GetById(id);
         }
@@ -24,7 +29,7 @@ namespace starqueen.Services
 
         public List<Truck_Activity> GetAllTruckActivities()
         {
-            return (List<Truck_Activity>)_truckActivityRepository.GetAll();
+            return _truckActivityRepository.GetAll().ToList();
         }
 
         public bool UpdateTruckActivity(Truck_Activity activity)

@@ -1,7 +1,10 @@
-﻿using Dapper;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using starqueen.Models;
+using starqueen.Services;
+using System.Security.Claims;
 
 namespace starqueenAPI.Controllers
 {
@@ -9,23 +12,20 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=StarQueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
+        private readonly UsersServices _users;
+
+        public AuthController(UsersServices users)
+        {
+            _users = users;
+        }
 
         // POST /api/auth/login
+        // Verifies the password hash and issues an HttpOnly auth cookie.
         [HttpPost("login")]
-        public LoginResponse Login([FromBody] LoginRequest request)
+        [AllowAnonymous]
+        public async Task<LoginResponse> Login([FromBody] LoginRequest request)
         {
-            using var connection = new SqlConnection(connectionString);
-
-            // Find user by email
-            var user = connection.QueryFirstOrDefault<Users>(
-                "SELECT * FROM Users WHERE email = @email",
-                new { email = request.email }
-            );
-
-            // User not found
+            var user = _users.Authenticate(request.email.Trim(), request.password);
             if (user == null)
             {
                 return new LoginResponse
@@ -35,17 +35,17 @@ namespace starqueenAPI.Controllers
                 };
             }
 
-            // Wrong password
-            if (user.password != request.password)
+            var claims = new List<Claim>
             {
-                return new LoginResponse
-                {
-                    success = false,
-                    message = "Invalid email or password"
-                };
-            }
+                new(ClaimTypes.NameIdentifier, user.user_id.ToString()),
+                new(ClaimTypes.Name, user.username),
+                new(ClaimTypes.Email, user.email),
+                new(ClaimTypes.Role, user.role)
+            };
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
-            // Success
             return new LoginResponse
             {
                 success = true,
@@ -56,5 +56,40 @@ namespace starqueenAPI.Controllers
                 email = user.email
             };
         }
+
+        // POST /api/auth/logout
+        [HttpPost("logout")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return NoContent();
+        }
+
+        // GET /api/auth/me — who is logged in (based on the cookie)
+        [HttpGet("me")]
+        public ActionResult<UserResponse> Me()
+        {
+            var user = _users.GetUserById(User.GetUserId());
+            return user == null ? Unauthorized() : UserResponse.From(user);
+        }
+
+        // POST /api/auth/change-password — for the logged-in user
+        [HttpPost("change-password")]
+        public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            bool changed = _users.ChangePassword(
+                User.GetUserId(), request.current_password, request.new_password);
+
+            return changed
+                ? Ok(new { message = "Password changed successfully." })
+                : BadRequest(new { message = "Current password is incorrect." });
+        }
+    }
+
+    public static class ClaimsPrincipalExtensions
+    {
+        public static int GetUserId(this ClaimsPrincipal user)
+            => int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out int id) ? id : 0;
     }
 }

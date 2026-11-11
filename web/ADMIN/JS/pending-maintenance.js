@@ -205,7 +205,7 @@ function renderNearReplacement() {
                     <tbody>
                         ${State.nearReplaceSP.length ? State.nearReplaceSP.map(n => `
                             <tr class="fade-in">
-                                <td><strong>${n.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(n.plate_number ?? '—')}</strong></td>
                                 <td><span class="stat-pill red">${n.near_limit_items}</span></td>
                                 <td>${n.near_limit_items >= 5
                                     ? '<span class="status-badge overdue">Critical</span>'
@@ -262,8 +262,8 @@ function renderOldestComponents() {
                                 : `${ageDays} day${ageDays !== 1 ? 's' : ''} ago`;
                             return `
                                 <tr class="fade-in">
-                                    <td><strong>${o.plate_number ?? '—'}</strong></td>
-                                    <td>${o.maintenance_task ?? '—'}</td>
+                                    <td><strong>${escapeHtml(o.plate_number ?? '—')}</strong></td>
+                                    <td>${escapeHtml(o.maintenance_task ?? '—')}</td>
                                     <td>${new Date(o.oldest_maintenance_date).toLocaleDateString('en-US',
                                         { month: '2-digit', day: '2-digit', year: 'numeric' })}</td>
                                     <td><span class="stat-pill ${ageDays >= 90 ? 'red' : ageDays >= 30 ? 'amber' : 'green'}">${ageText}</span></td>
@@ -360,8 +360,8 @@ function renderMaintenanceAlerts() {
                     <tbody>
                         ${actionableRows.length ? actionableRows.map(a => `
                             <tr class="fade-in">
-                                <td><strong>${a.plate_number ?? '—'}</strong></td>
-                                <td>${a.maintenance_item ?? '—'}</td>
+                                <td><strong>${escapeHtml(a.plate_number ?? '—')}</strong></td>
+                                <td>${escapeHtml(a.maintenance_item ?? '—')}</td>
                                 <td><span class="status-badge ${(a.status || '').toLowerCase()}">${a.status ?? '—'}</span></td>
                                 <td>${a.latest_km != null ? Number(a.latest_km).toLocaleString() + ' KM' : '—'}</td>
                                 <td>${a.next_due_km != null ? Number(a.next_due_km).toLocaleString() + ' KM' : '—'}</td>
@@ -410,7 +410,7 @@ function renderOverdueReplacement() {
                     <tbody>
                         ${State.overdueReplSP.length ? State.overdueReplSP.map(r => `
                             <tr class="fade-in">
-                                <td><strong>${r.truck_name ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(r.truck_name ?? '—')}</strong></td>
                                 <td><span class="stat-pill red">${r.replace_now_components}</span></td>
                                 <td>${r.replace_now_components >= 3
                                     ? '<span class="status-badge overdue">Critical</span>'
@@ -456,7 +456,7 @@ function renderGoodStatusComponents() {
                     <tbody>
                         ${State.goodStatusSP.length ? State.goodStatusSP.map(g => `
                             <tr class="fade-in">
-                                <td><strong>${g.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(g.plate_number ?? '—')}</strong></td>
                                 <td><span class="stat-pill green">${g.good_maintenance_count}</span></td>
                                 <td>${g.good_maintenance_count >= 5
                                     ? '<span class="status-badge good" style="background:#e8f5e9;color:#2e7d32;">Excellent</span>'
@@ -501,7 +501,7 @@ function renderTotalComponents() {
                     <tbody>
                         ${State.totalCompSP.length ? State.totalCompSP.map(t => `
                             <tr class="fade-in">
-                                <td><strong>${t.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(t.plate_number ?? '—')}</strong></td>
                                 <td><span class="stat-pill blue">${t.total_maintenance_items}</span></td>
                             </tr>
                         `).join('') : `
@@ -610,9 +610,9 @@ function createTruckCard(truck) {
     card.innerHTML = `
         <div class="truck-card-header has-${worstStatus}">
             <div>
-                <div class="truck-name">${truck.truckName || 'Unknown Truck'}</div>
+                <div class="truck-name">${escapeHtml(truck.truckName || 'Unknown Truck')}</div>
                 <div class="truck-meta">
-                    ${truck.plateNumber || ''} · ${totalCount} component${totalCount !== 1 ? 's' : ''}
+                    ${escapeHtml(truck.plateNumber || '')} · ${totalCount} component${totalCount !== 1 ? 's' : ''}
                     ${currentKm != null ? ` · ${currentKm.toLocaleString()} KM` : ''}
                 </div>
                 ${spNear ? `<div class="truck-meta" style="font-size:11px;margin-top:3px;color:#c62828;">
@@ -704,7 +704,7 @@ function openMaintenanceModal(truck) {
 
         return `
             <tr class="modal-row">
-                <td class="modal-task">${task}</td>
+                <td class="modal-task">${escapeHtml(task)}</td>
                 <td class="modal-status-cell">${badgeHtml}${kmInfo}</td>
             </tr>`;
     }).join('') : `
@@ -767,7 +767,7 @@ function renderHistory(searchTerm = '') {
             const km   = l.current_km ?? l.currentKm;
             return `
                 <tr>
-                    <td>${task}</td>
+                    <td>${escapeHtml(task)}</td>
                     <td>${date}</td>
                     <td>${km != null && km > 0 ? Number(km).toLocaleString() + ' KM' : '—'}</td>
                     <td><span class="status-badge" style="background:#e8f5e9;color:#2e7d32;">✓ Resolved</span></td>
@@ -776,7 +776,7 @@ function renderHistory(searchTerm = '') {
 
         return `
             <div class="sp-section" style="margin-bottom:16px;">
-                <h4 style="font-size:14px;font-weight:700;color:var(--color-text-primary);margin-bottom:12px;padding:16px 20px 0;">${name}</h4>
+                <h4 style="font-size:14px;font-weight:700;color:var(--color-text-primary);margin-bottom:12px;padding:16px 20px 0;">${escapeHtml(name)}</h4>
                 <div class="sp-table-wrapper">
                     <table class="sp-table">
                         <thead><tr><th>Component</th><th>Resolved Date</th><th>KM at Resolve</th><th>Status</th></tr></thead>

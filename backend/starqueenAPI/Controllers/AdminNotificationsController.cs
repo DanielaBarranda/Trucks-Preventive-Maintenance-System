@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using starqueen.Models;
 using starqueen.Services;
-using Dapper;
-using Microsoft.Data.SqlClient;
 
 namespace starqueenAPI.Controllers
 {
@@ -10,64 +9,57 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class AdminNotificationsController : ControllerBase
     {
-        readonly AdminNotificationsServices _services = new AdminNotificationsServices();
+        readonly AdminNotificationsServices _services;
 
-        readonly string _connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=Starqueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
+        public AdminNotificationsController(AdminNotificationsServices services)
+        {
+            _services = services;
+        }
 
         // ── Basic CRUD ───────────────────────────────────────────────────────
 
         // POST /api/adminnotifications
         [HttpPost]
-        public bool AddAdminNotification(Admin_Notifications notification)
-            => _services.AddAdminNotification(notification);
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult AddAdminNotification(Admin_Notifications notification)
+            => _services.AddAdminNotification(notification) ? Ok(true) : BadRequest("Failed to add notification.");
 
-        // GET /api/adminnotifications
+        // GET /api/adminnotifications  (drivers read this too, for their truck's status)
         [HttpGet]
         public List<Admin_Notifications> GetAllAdminNotifications()
             => _services.GetAllAdminNotifications();
 
         // GET /api/adminnotifications/{id}
         [HttpGet("{id}")]
-        public Admin_Notifications? GetAdminNotificationById(int id)
-            => _services.GetAdminNotificationById(id);
+        public ActionResult<Admin_Notifications> GetAdminNotificationById(int id)
+            => _services.GetAdminNotificationById(id) is { } n ? n : NotFound();
 
         // PUT /api/adminnotifications/{id}
         [HttpPut("{id}")]
-        public bool UpdateAdminNotification(int id, Admin_Notifications notification)
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult UpdateAdminNotification(int id, Admin_Notifications notification)
         {
             notification.admin_notification_id = id;
-            return _services.UpdateAdminNotification(notification);
+            return _services.UpdateAdminNotification(notification) ? Ok(true) : NotFound();
         }
 
         // PUT /api/adminnotifications/{id}/read
         [HttpPut("{id}/read")]
-        public bool MarkAsRead(int id)
-        {
-            using var connection = new SqlConnection(_connectionString);
-            int rows = connection.Execute(
-                "UPDATE [Admin_Notifications] SET is_read = 1 WHERE admin_notification_id = @Id",
-                new { Id = id }
-            );
-            return rows > 0;
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult MarkAsRead(int id)
+            => _services.MarkAsRead(id) ? Ok(true) : NotFound();
 
         // PUT /api/adminnotifications/read-all
         [HttpPut("read-all")]
+        [Authorize(Roles = Roles.Admin)]
         public bool MarkAllAsRead()
-        {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Execute(
-                "UPDATE [Admin_Notifications] SET is_read = 1 WHERE is_read = 0"
-            );
-            return true;
-        }
+            => _services.MarkAllAsRead();
 
         // DELETE /api/adminnotifications/{id}
         [HttpDelete("{id}")]
-        public bool DeleteAdminNotification(int id)
-            => _services.DeleteAdminNotification(id);
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult DeleteAdminNotification(int id)
+            => _services.DeleteAdminNotification(id) ? Ok(true) : NotFound();
 
         // ── SP: SP_Unread_Maintenance_Notifications_Per_Truck ────────────────
         // GET /api/adminnotifications/unread-per-truck

@@ -5,36 +5,70 @@ namespace starqueen.Services
 {
     public class UsersServices
     {
-        public readonly UsersRepository _usersRepository = new UsersRepository();
+        public readonly UsersRepository _usersRepository;
+        private readonly PasswordService _passwords;
 
-        // 1. GetById
-        public Users GetUserById(int id)
+        public UsersServices(UsersRepository usersRepository, PasswordService passwords)
         {
-            return _usersRepository.GetById(id);
+            _usersRepository = usersRepository;
+            _passwords = passwords;
         }
 
-        // 2. Add
+        public Users? GetUserById(int id) => _usersRepository.GetById(id);
+
+        public List<Users> GetAllUsers() => _usersRepository.GetAll().ToList();
+
+        public bool DeleteUser(int id) => _usersRepository.Delete(id);
+
+        // Hashes the password before saving
         public bool AddUser(Users user)
         {
+            user.password = _passwords.Hash(user.password);
             return _usersRepository.Add(user);
         }
 
-        // 3. Delete
-        public bool DeleteUser(int id)
+        // Updates profile fields only. The stored password hash is always kept.
+        public bool UpdateUser(int id, UserUpdateRequest request, bool allowRoleChange)
         {
-            return _usersRepository.Delete(id);
+            var existing = _usersRepository.GetById(id);
+            if (existing == null) return false;
+
+            existing.username = request.username.Trim();
+            existing.email = request.email.Trim();
+            if (allowRoleChange && !string.IsNullOrWhiteSpace(request.role))
+                existing.role = request.role;
+
+            return _usersRepository.Update(existing);
         }
 
-        // 4. Get All
-        public List<Users> GetAllUsers()
+        // Returns the user when the email/password pair is valid, otherwise null
+        public Users? Authenticate(string email, string password)
         {
-            return (List<Users>)_usersRepository.GetAll();
+            var user = _usersRepository.GetByEmail(email);
+            if (user == null) return null;
+            return _passwords.Verify(user.password, password) ? user : null;
         }
 
-        // 5. Update
-        public bool UpdateUser(Users user)
+        public bool ChangePassword(int userId, string currentPassword, string newPassword)
         {
-            return _usersRepository.Update(user);
+            var user = _usersRepository.GetById(userId);
+            if (user == null || !_passwords.Verify(user.password, currentPassword)) return false;
+
+            return _usersRepository.UpdatePassword(userId, _passwords.Hash(newPassword));
+        }
+
+        // One-time upgrade: hashes any password still stored as plain text.
+        // Users keep logging in with the same password. Safe to run on every startup.
+        public int HashLegacyPasswords()
+        {
+            int upgraded = 0;
+            foreach (var user in _usersRepository.GetAll())
+            {
+                if (PasswordService.IsHashed(user.password)) continue;
+                _usersRepository.UpdatePassword(user.user_id, _passwords.Hash(user.password));
+                upgraded++;
+            }
+            return upgraded;
         }
     }
 }

@@ -426,12 +426,6 @@ function resetDropzone(type) {
         <p class="dropzone-hint">${hint}</p>`;
 }
 
-function escapeHtml(str) {
-    return String(str)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function formatBytes(bytes) {
     if (bytes < 1024)    return bytes + ' B';
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';

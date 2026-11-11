@@ -159,8 +159,8 @@ function renderAcknowledgementRate() {
                             const color  = rate >= 80 ? '#16a34a' : rate >= 50 ? '#ca8a04' : '#dc2626';
                             return `<tr>
                                 <td>
-                                    <strong>${name}</strong>
-                                    <div style="font-size:11px;color:#9ca3af;">${plate}</div>
+                                    <strong>${escapeHtml(name)}</strong>
+                                    <div style="font-size:11px;color:#9ca3af;">${escapeHtml(plate)}</div>
                                 </td>
                                 <td><span class="count-pill green">${r.read}</span></td>
                                 <td><span class="count-pill red">${r.unread}</span></td>
@@ -236,7 +236,7 @@ function renderUnreadPerTruck() {
                                 ? '<span class="alert-pill high">High</span>'
                                 : '<span class="alert-pill medium">Medium</span>';
                             return `<tr>
-                                <td><strong>${name}</strong></td>
+                                <td><strong>${escapeHtml(name)}</strong></td>
                                 <td>${plate}</td>
                                 <td><span class="count-pill red">${r.unread}</span></td>
                                 <td>${priority}</td>
@@ -330,10 +330,10 @@ function render(newIds = []) {
                     <div class="notif-title-col">
                         <div class="notif-title-row">
                             ${!item.isRead ? `<span class="notif-unread-dot"></span>` : ''}
-                            <span class="notif-title">${item.title}</span>
+                            <span class="notif-title">${escapeHtml(item.title)}</span>
                             <span class="notif-type-badge ${config.badgeCls}">${config.label}</span>
                         </div>
-                        <span class="notif-truck">${item.displayTruck}</span>
+                        <span class="notif-truck">${escapeHtml(item.displayTruck)}</span>
                     </div>
                     <div class="notif-meta-col">
                         <span class="notif-time">${dateRel}</span>
@@ -350,11 +350,11 @@ function render(newIds = []) {
                         ${showTask ? `
                         <div class="notif-detail-row">
                             <span class="notif-detail-label">Task</span>
-                            <span class="notif-task-preview ${item.isResolved ? 'resolved' : item.type}">${item.task}</span>
+                            <span class="notif-task-preview ${item.isResolved ? 'resolved' : item.type}">${escapeHtml(item.task)}</span>
                         </div>` : ''}
                         <div class="notif-detail-row">
                             <span class="notif-detail-label">Truck</span>
-                            <span class="notif-detail-value">${item.fullTruck}</span>
+                            <span class="notif-detail-value">${escapeHtml(item.fullTruck)}</span>
                         </div>
                         <div class="notif-detail-row">
                             <span class="notif-detail-label">Date</span>
@@ -362,7 +362,7 @@ function render(newIds = []) {
                         </div>
                     </div>
                     <div class="notif-body-right">
-                        <p class="notif-message">${item.message}</p>
+                        <p class="notif-message">${escapeHtml(item.message)}</p>
                     </div>
                 </div>
                 <div class="notif-card-footer">

@@ -13,18 +13,35 @@ web/       Static HTML/CSS/JS front end
   DRIVERS/        Dashboard, maintenance log, truck activity, expenses, odometer
 ```
 
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Backend | ASP.NET Core 8 Web API (C#) |
+| Data access | Dapper + Microsoft.Data.SqlClient, stored procedures and views |
+| Database | SQL Server (LocalDB for development) |
+| Auth | Cookie authentication (HttpOnly, SameSite=Strict), role-based (`Admin`, `Driver`), PBKDF2 password hashing via ASP.NET Core Identity's `PasswordHasher` |
+| Front end | Static HTML, CSS and vanilla JavaScript, served by the API |
+| API docs | Swagger / OpenAPI (Development only, at `/swagger`) |
+
 ## Running locally
 
 **Requirements:** .NET 8 SDK and SQL Server LocalDB (comes with Visual Studio).
 
-1. Create a LocalDB database named `StarQueen_PMTS`.
-2. Run the API:
+1. Make sure the `Starqueen_PMTS` database exists in `(localdb)\MSSQLLocalDB`.
+   The connection string is in `backend/starqueenAPI/appsettings.json` under `ConnectionStrings:DefaultConnection`.
+2. Trust the local HTTPS certificate (one time only):
+   ```
+   dotnet dev-certs https --trust
+   ```
+3. Run the app:
    ```
    cd backend/starqueenAPI
-   dotnet run
+   dotnet run --launch-profile https
    ```
-   The API runs at `https://localhost:7273`.
-3. Open `web/index.html` in a browser, or serve the `web/` folder with any static server (for example, VS Code Live Server).
+4. Open **https://localhost:7273** and log in. The API serves both the web pages and the data, so there is no separate front-end server.
+
+On first start, any passwords still stored as plain text are hashed automatically; users keep logging in with the same password.
 
 > Never commit real database credentials. For a remote database, set the connection string through `dotnet user-secrets` or the `ConnectionStrings__DefaultConnection` environment variable.
 

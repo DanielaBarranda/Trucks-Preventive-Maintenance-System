@@ -9,7 +9,7 @@ namespace starqueen.Repositories
     public interface IGenericRepository<T> where T : class
 
     {
-        T GetById(int id);
+        T? GetById(int id);
         IEnumerable<T> GetAll();
         bool Add(T Entity);
         bool Update(T Entity);

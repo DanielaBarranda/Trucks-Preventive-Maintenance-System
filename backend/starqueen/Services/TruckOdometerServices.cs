@@ -5,9 +5,14 @@ namespace starqueen.Services
 {
     public class TruckOdometerServices
     {
-        public readonly TruckOdometerRepository _truckOdometerRepository = new TruckOdometerRepository();
+        public readonly TruckOdometerRepository _truckOdometerRepository;
 
-        public Truck_Odometer GetOdometerById(int id)
+        public TruckOdometerServices(TruckOdometerRepository truckOdometerRepository)
+        {
+            _truckOdometerRepository = truckOdometerRepository;
+        }
+
+        public Truck_Odometer? GetOdometerById(int id)
         {
             return _truckOdometerRepository.GetById(id);
         }
@@ -24,7 +29,7 @@ namespace starqueen.Services
 
         public List<Truck_Odometer> GetAllOdometers()
         {
-            return (List<Truck_Odometer>)_truckOdometerRepository.GetAll();
+            return _truckOdometerRepository.GetAll().ToList();
         }
 
         public bool UpdateOdometer(Truck_Odometer odometer)

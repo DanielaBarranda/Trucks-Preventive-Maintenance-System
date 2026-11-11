@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using starqueen.Models;
 using starqueen.Services;
 
@@ -8,42 +9,42 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class MaintenanceReferenceController : ControllerBase
     {
-        readonly MaintenanceReferenceServices _services = new MaintenanceReferenceServices();
+        readonly MaintenanceReferenceServices _services;
+
+        public MaintenanceReferenceController(MaintenanceReferenceServices services)
+        {
+            _services = services;
+        }
 
         // POST /api/maintenancereference
         [HttpPost]
-        public bool AddMaintenanceReference(Maintenance_Reference reference)
-        {
-            return _services.AddMaintenanceReference(reference);
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult AddMaintenanceReference(Maintenance_Reference reference)
+            => _services.AddMaintenanceReference(reference) ? Ok(true) : BadRequest("Failed to add reference.");
 
         // GET /api/maintenancereference
         [HttpGet]
         public List<Maintenance_Reference> GetAllMaintenanceReferences()
-        {
-            return _services.GetAllMaintenanceReferences();
-        }
+            => _services.GetAllMaintenanceReferences();
 
         // GET /api/maintenancereference/{id}
         [HttpGet("{id}")]
-        public Maintenance_Reference? GetMaintenanceReferenceById(int id)
-        {
-            return _services.GetMaintenanceReferenceById(id);
-        }
+        public ActionResult<Maintenance_Reference> GetMaintenanceReferenceById(int id)
+            => _services.GetMaintenanceReferenceById(id) is { } r ? r : NotFound();
 
-        // PUT /api/maintenancereference/{id}
+        // PUT /api/maintenancereference/{id}  (send the full record)
         [HttpPut("{id}")]
-        public bool UpdateMaintenanceReference(int id, Maintenance_Reference reference)
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult UpdateMaintenanceReference(int id, Maintenance_Reference reference)
         {
             reference.reference_id = id;
-            return _services.UpdateMaintenanceReference(reference);
+            return _services.UpdateMaintenanceReference(reference) ? Ok(true) : NotFound();
         }
 
         // DELETE /api/maintenancereference/{id}
         [HttpDelete("{id}")]
-        public bool DeleteMaintenanceReference(int id)
-        {
-            return _services.DeleteMaintenanceReference(id);
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult DeleteMaintenanceReference(int id)
+            => _services.DeleteMaintenanceReference(id) ? Ok(true) : NotFound();
     }
 }

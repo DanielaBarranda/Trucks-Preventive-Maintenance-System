@@ -5,9 +5,14 @@ namespace starqueen.Services
 {
     public class MaintenanceReferenceServices
     {
-        public readonly MaintenanceReferenceRepository _repo = new MaintenanceReferenceRepository();
+        public readonly MaintenanceReferenceRepository _repo;
 
-        public Maintenance_Reference GetMaintenanceReferenceById(int id)
+        public MaintenanceReferenceServices(MaintenanceReferenceRepository repo)
+        {
+            _repo = repo;
+        }
+
+        public Maintenance_Reference? GetMaintenanceReferenceById(int id)
         {
             return _repo.GetById(id);
         }
@@ -24,7 +29,7 @@ namespace starqueen.Services
 
         public List<Maintenance_Reference> GetAllMaintenanceReferences()
         {
-            return (List<Maintenance_Reference>)_repo.GetAll();
+            return _repo.GetAll().ToList();
         }
 
         public bool UpdateMaintenanceReference(Maintenance_Reference reference)

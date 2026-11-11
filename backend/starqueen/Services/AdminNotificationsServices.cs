@@ -5,11 +5,16 @@ namespace starqueen.Services
 {
     public class AdminNotificationsServices
     {
-        public readonly AdminNotificationsRepository _repo = new AdminNotificationsRepository();
+        public readonly AdminNotificationsRepository _repo;
+
+        public AdminNotificationsServices(AdminNotificationsRepository repo)
+        {
+            _repo = repo;
+        }
 
         // ── Basic CRUD ───────────────────────────────────────────────────────
 
-        public Admin_Notifications GetAdminNotificationById(int id)
+        public Admin_Notifications? GetAdminNotificationById(int id)
             => _repo.GetById(id);
 
         public bool AddAdminNotification(Admin_Notifications notification)
@@ -19,10 +24,16 @@ namespace starqueen.Services
             => _repo.Delete(id);
 
         public List<Admin_Notifications> GetAllAdminNotifications()
-            => (List<Admin_Notifications>)_repo.GetAll();
+            => _repo.GetAll().ToList();
 
         public bool UpdateAdminNotification(Admin_Notifications notification)
             => _repo.Update(notification);
+
+        public bool MarkAsRead(int id)
+            => _repo.MarkAsRead(id);
+
+        public bool MarkAllAsRead()
+            => _repo.MarkAllAsRead();
 
         // ── SP: SP_Unread_Maintenance_Notifications_Per_Truck ────────────────
         // Used in the Alerts page — "Unread Maintenance Alerts Per Truck" table

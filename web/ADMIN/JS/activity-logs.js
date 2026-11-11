@@ -248,8 +248,8 @@ const ActivityLogs = {
                                 const catClass = this.getCategoryClass(cat);
                                 return `
                                 <tr class="fade-in">
-                                    <td><strong>${d.full_name ?? '—'}</strong></td>
-                                    <td>${d.plate_number ?? '—'}</td>
+                                    <td><strong>${escapeHtml(d.full_name ?? '—')}</strong></td>
+                                    <td>${escapeHtml(d.plate_number ?? '—')}</td>
                                     <td><span class="category-pill ${catClass}">${cat}</span></td>
                                     <td><span class="stat-pill blue">${d.total_departures ?? 0}</span></td>
                                     <td><span class="stat-pill green">${d.total_arrivals  ?? 0}</span></td>
@@ -329,7 +329,7 @@ const ActivityLogs = {
                                 const lastTime  = this.formatNiceTime(t.last_activity_date);
                                 return `
                                 <tr class="fade-in">
-                                    <td><strong>${t.plate_number ?? '—'}</strong></td>
+                                    <td><strong>${escapeHtml(t.plate_number ?? '—')}</strong></td>
                                     <td><span class="category-pill ${catClass}">${cat}</span></td>
                                     <td>${firstDate}</td>
                                     <td>${firstTime !== '—'
@@ -442,16 +442,16 @@ const ActivityLogs = {
             <tr class="fade-in">
                 <td>
                     <div class="truck-plate-cell">
-                        <span class="truck-name-text">${log.truckName}</span>
-                        <span class="truck-plate-text">${log.truckPlate}</span>
+                        <span class="truck-name-text">${escapeHtml(log.truckName)}</span>
+                        <span class="truck-plate-text">${escapeHtml(log.truckPlate)}</span>
                     </div>
                 </td>
-                <td>${log.driver}</td>
+                <td>${escapeHtml(log.driver)}</td>
                 <td>${this.formatNiceDate(log.date)}</td>
-                <td>${log.farm}</td>
-                <td>${log.address}</td>
-                <td>${log.callTime}</td>
-                <td>${log.plant}</td>
+                <td>${escapeHtml(log.farm)}</td>
+                <td>${escapeHtml(log.address)}</td>
+                <td>${escapeHtml(log.callTime)}</td>
+                <td>${escapeHtml(log.plant)}</td>
                 <td>${this.formatNiceDate(log.departure)}</td>
                 <td>${this.formatNiceTime(log.departure)}</td>
                 <td>${this.formatNiceDate(log.arrival)}</td>

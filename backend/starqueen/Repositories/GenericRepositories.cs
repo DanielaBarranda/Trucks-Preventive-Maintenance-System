@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using Microsoft.Data.SqlClient;
+using starqueen.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
@@ -9,16 +9,15 @@ namespace starqueen.Repositories
 {
     public class GenericRepositories<T> : IGenericRepository<T> where T : class
     {
-        IDbConnection connection;
+        private readonly IDbConnectionFactory _db;
 
-        readonly string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=Starqueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
-
-        public GenericRepositories()
+        public GenericRepositories(IDbConnectionFactory db)
         {
-            connection = new SqlConnection(connectionString);
+            _db = db;
         }
+
+        // Opens a fresh connection per operation (Dapper opens/closes it for us)
+        protected IDbConnection CreateConnection() => _db.CreateConnection();
 
         // Get SELECT clause with column aliases (col AS PropertyName)
         public string GetSelectClause()
@@ -27,7 +26,7 @@ namespace starqueen.Repositories
             var clauses = props.Select(p =>
             {
                 var colAttr = p.GetCustomAttribute<ColumnAttribute>();
-                string colName = colAttr != null ? colAttr.Name : p.Name;
+                string colName = colAttr?.Name ?? p.Name;
                 return $"{colName} AS {p.Name}";
             });
             return string.Join(", ", clauses);
@@ -36,12 +35,13 @@ namespace starqueen.Repositories
         // ========================================
         // GET BY ID
         // ========================================
-        public T GetById(int id)
+        public T? GetById(int id)
         {
             string tableName = GetTableName();
             string keyColumn = GetKeyColumnName();
             string selectClause = GetSelectClause();
             string query = $"SELECT {selectClause} FROM {tableName} WHERE {keyColumn} = @Id";
+            using IDbConnection connection = CreateConnection();
             return connection.QueryFirstOrDefault<T>(query, new { Id = id });
         }
 
@@ -53,6 +53,7 @@ namespace starqueen.Repositories
             string tableName = GetTableName();
             string selectClause = GetSelectClause();
             string query = $"SELECT {selectClause} FROM {tableName}";
+            using IDbConnection connection = CreateConnection();
             return connection.Query<T>(query).ToList();
         }
 
@@ -65,6 +66,7 @@ namespace starqueen.Repositories
             string columns = GetColumnNames();
             string values = GetColumnValues();
             string query = $"INSERT INTO {tableName} ({columns}) VALUES ({values})";
+            using IDbConnection connection = CreateConnection();
             int affectedRow = connection.Execute(query, Entity);
             return affectedRow == 1;
         }
@@ -84,11 +86,12 @@ namespace starqueen.Repositories
                 .Select(p =>
                 {
                     var columnAttr = p.GetCustomAttribute<ColumnAttribute>();
-                    string colName = columnAttr != null ? columnAttr.Name : p.Name;
+                    string colName = columnAttr?.Name ?? p.Name;
                     return $"{colName} = @{p.Name}";
                 });
 
             string query = $"UPDATE {tableName} SET {string.Join(", ", setClause)} WHERE {keyColumn} = @{keyProperty}";
+            using IDbConnection connection = CreateConnection();
             int affectedRow = connection.Execute(query, Entity);
             return affectedRow == 1;
         }
@@ -101,6 +104,7 @@ namespace starqueen.Repositories
             string tableName = GetTableName();
             string keyColumn = GetKeyColumnName();
             string query = $"DELETE FROM {tableName} WHERE {keyColumn} = @Id";
+            using IDbConnection connection = CreateConnection();
             int affectedRow = connection.Execute(query, new { Id = id });
             return affectedRow == 1;
         }
@@ -126,7 +130,7 @@ namespace starqueen.Repositories
             if (keyProp == null) return "Id";
 
             var columnAttr = keyProp.GetCustomAttribute<ColumnAttribute>();
-            return columnAttr != null ? columnAttr.Name : keyProp.Name;
+            return columnAttr?.Name ?? keyProp.Name;
         }
 
         // Get the primary key property name
@@ -146,7 +150,7 @@ namespace starqueen.Repositories
                 .Select(p =>
                 {
                     var columnAttr = p.GetCustomAttribute<ColumnAttribute>();
-                    return columnAttr != null ? columnAttr.Name : p.Name;
+                    return columnAttr?.Name ?? p.Name;
                 }));
             return columns;
         }
@@ -159,46 +163,5 @@ namespace starqueen.Repositories
                 .Select(p => $"@{p.Name}"));
             return values;
         }
-
-        // ── Insert odometer update notification ─────────────────────
-        // Called every time a driver submits an odometer reading.
-        // Always inserts a new Information notification — keeps full history.
-        public void InsertOdometerNotification(int truckId, int currentKm)
-        {
-            using IDbConnection connection = new SqlConnection(connectionString);
-
-            // Get truck info
-            var truck = connection.QueryFirstOrDefault<dynamic>(
-                @"SELECT truck_id, truck_name, plate_number, truck_type
-          FROM   Trucks
-          WHERE  truck_id = @TruckId",
-                new { TruckId = truckId }
-            );
-            if (truck == null) return;
-
-            string truckName = truck.truck_name ?? "";
-            string plateNumber = truck.plate_number ?? "";
-            string truckType = truck.truck_type ?? "";
-
-            string message = $"{truckName} ({truckType}) {plateNumber} odometer updated to " +
-                             $"{currentKm:N0} KM on {DateTime.Now:MMMM dd, yyyy}";
-
-            connection.Execute(@"
-        INSERT INTO Admin_Notifications
-            (truck_id, maintenance_id, type, message, maintenance_task,
-             is_read, is_resolved, resolved_at, created_at)
-        VALUES
-            (@TruckId, NULL, 'Information', @Message, NULL,
-             0, 0, NULL, @Now)",
-                new
-                {
-                    TruckId = truckId,
-                    Message = message,
-                    Now = DateTime.Now
-                }
-            );
-        }
-
-
     }
 }

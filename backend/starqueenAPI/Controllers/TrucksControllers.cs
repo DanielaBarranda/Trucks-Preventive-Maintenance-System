@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using starqueen.Models;
 using starqueen.Services;
 
@@ -8,42 +9,42 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class TrucksController : ControllerBase
     {
-        readonly TrucksServices _trucksServices = new TrucksServices();
+        readonly TrucksServices _trucksServices;
+
+        public TrucksController(TrucksServices trucksServices)
+        {
+            _trucksServices = trucksServices;
+        }
 
         // POST /api/trucks
         [HttpPost]
-        public bool AddTrucks(Trucks truck)
-        {
-            return _trucksServices.AddTrucks(truck);
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult AddTrucks(Trucks truck)
+            => _trucksServices.AddTrucks(truck) ? Ok(true) : BadRequest("Failed to add truck.");
 
         // GET /api/trucks
         [HttpGet]
         public List<Trucks> GetAllTrucks()
-        {
-            return _trucksServices.GetAllTrucks();
-        }
+            => _trucksServices.GetAllTrucks();
 
         // GET /api/trucks/{id}
         [HttpGet("{id}")]
-        public Trucks? GetTruckById(int id)
-        {
-            return _trucksServices.GetTruckById(id);
-        }
+        public ActionResult<Trucks> GetTruckById(int id)
+            => _trucksServices.GetTruckById(id) is { } truck ? truck : NotFound();
 
-        // PUT /api/trucks/{id}
+        // PUT /api/trucks/{id}  (send the full truck — every column is overwritten)
         [HttpPut("{id}")]
-        public bool UpdateTruck(int id, Trucks truck)
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult UpdateTruck(int id, Trucks truck)
         {
             truck.truck_ID = id;
-            return _trucksServices.UpdateTruck(truck);
+            return _trucksServices.UpdateTruck(truck) ? Ok(true) : NotFound();
         }
 
         // DELETE /api/trucks/{id}
         [HttpDelete("{id}")]
-        public bool DeleteTruck(int id)
-        {
-            return _trucksServices.DeleteTrucks(id);
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult DeleteTruck(int id)
+            => _trucksServices.DeleteTrucks(id) ? Ok(true) : NotFound();
     }
 }

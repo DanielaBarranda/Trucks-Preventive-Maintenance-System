@@ -2,9 +2,38 @@
 // STARQUEEN PMTS - Config & Session Manager
 // ========================================
 
+// The API serves this front end, so API calls go to the same origin.
+// (That also lets the browser send the HttpOnly login cookie automatically.)
 const CONFIG = {
-    API_BASE: 'https://localhost:7273'
+    API_BASE: window.location.origin
 };
+
+// ── Escape text before putting it into innerHTML ──
+// Use for anything a user typed: names, farm, address, notes, messages...
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ── Global 401 handling ──
+// If the login cookie is missing or expired, any API call returns 401.
+// Send the user back to the login page instead of showing empty data.
+(function installAuthRedirect() {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
+        const url = String(args[0]?.url ?? args[0] ?? '');
+        if (response.status === 401 && !url.includes('/api/auth/')) {
+            SessionManager.clear();
+            window.location.replace('/ADMIN/HTML/login.html');
+        }
+        return response;
+    };
+})();
 
 const SessionManager = {
 
@@ -69,6 +98,8 @@ const SessionManager = {
 
     // ── Logout: clear + block back button ──
     logout(redirectUrl = '/ADMIN/HTML/login.html') {
+        // Clear the server-side login cookie too (keepalive survives the redirect)
+        fetch(`${CONFIG.API_BASE}/api/auth/logout`, { method: 'POST', keepalive: true }).catch(() => {});
         this.clear();
         window.location.replace(redirectUrl); // replace() removes page from history
     }

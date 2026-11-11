@@ -108,7 +108,7 @@ function buildFilterBar(sectionId, filterState, data, { hasYear=true, hasMonth=t
                 <label class="sp-filter-label">Truck</label>
                 <select class="sp-filter-select" onchange="updateSpFilter('${sectionId}','truck',this.value)">
                     <option value="all">All Trucks</option>
-                    ${trucks.map(t => `<option value="${t}" ${filterState.truck === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${trucks.map(t => `<option value="${escapeHtml(t)}" ${filterState.truck === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}
                 </select>
             </div>` : ''}
             <button class="sp-filter-clear" onclick="clearSpFilter('${sectionId}')">
@@ -279,9 +279,9 @@ function renderExpenseAnalysis() {
             </tr>`;
         tableRows += groups[type].map(a => `
             <tr class="fade-in">
-                <td><strong>${a.truck_name ?? '—'}</strong></td>
-                <td>${a.plate_number ?? '—'}</td>
-                <td>${a.truck_type ?? '—'}</td>
+                <td><strong>${escapeHtml(a.truck_name ?? '—')}</strong></td>
+                <td>${escapeHtml(a.plate_number ?? '—')}</td>
+                <td>${escapeHtml(a.truck_type ?? '—')}</td>
                 <td><span class="stat-pill ${(a.expense_count ?? 0) > 0 ? 'blue' : 'green'}">${a.expense_count ?? 0}</span></td>
                 <td>${a.min_expense != null ? fmt(a.min_expense) : '—'}</td>
                 <td>${a.max_expense != null ? fmt(a.max_expense) : '—'}</td>
@@ -341,7 +341,7 @@ function renderExpenseAnalysis() {
                     <label class="sp-filter-label">Truck</label>
                     <select class="sp-filter-select" onchange="updateSpFilter('analysis','truck',this.value)">
                         <option value="all">All Trucks</option>
-                        ${allTrucks.map(t => `<option value="${t}" ${State.analysisFilter.truck === t ? 'selected':''}>${t}</option>`).join('')}
+                        ${allTrucks.map(t => `<option value="${escapeHtml(t)}" ${State.analysisFilter.truck === t ? 'selected':''}>${escapeHtml(t)}</option>`).join('')}
                     </select>
                 </div>
                 <button class="sp-filter-clear" onclick="clearSpFilter('analysis')">
@@ -385,7 +385,7 @@ function renderExpenseAnalysis() {
                     </div>
                     <div>
                         <div class="alert-stat-label">Highest Spender</div>
-                        <div class="alert-stat-value" style="font-size:14px;font-weight:700;">${topSpender?.truck_name ?? '—'}</div>
+                        <div class="alert-stat-value" style="font-size:14px;font-weight:700;">${escapeHtml(topSpender?.truck_name ?? '—')}</div>
                         <div style="font-size:12px;color:#b91c1c;margin-top:2px;">${topSpender ? fmt(topSpender.total_expenses) : ''}</div>
                     </div>
                 </div>
@@ -450,7 +450,7 @@ function renderMonthlyCost() {
                     <label class="sp-filter-label">Truck</label>
                     <select class="sp-filter-select" onchange="updateSpFilter('monthly','truck',this.value)">
                         <option value="all">All Trucks</option>
-                        ${allTrucks.map(t => `<option value="${t}" ${State.monthlyFilter.truck === t ? 'selected':''}>${t}</option>`).join('')}
+                        ${allTrucks.map(t => `<option value="${escapeHtml(t)}" ${State.monthlyFilter.truck === t ? 'selected':''}>${escapeHtml(t)}</option>`).join('')}
                     </select>
                 </div>
                 <button class="sp-filter-clear" onclick="clearSpFilter('monthly')">
@@ -470,7 +470,7 @@ function renderMonthlyCost() {
                     <tbody>
                         ${rows.length ? rows.map(m => `
                             <tr class="fade-in">
-                                <td><strong>${m.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(m.plate_number ?? '—')}</strong></td>
                                 <td>${m.year}</td>
                                 <td>${MONTH_NAMES[(m.month ?? 1) - 1]}</td>
                                 <td><strong style="color:var(--color-primary)">${fmt(m.monthly_truck_cost)}</strong></td>
@@ -528,7 +528,7 @@ function renderMostSpent() {
                     <label class="sp-filter-label">Truck</label>
                     <select class="sp-filter-select" onchange="updateSpFilter('mostSpent','truck',this.value)">
                         <option value="all">All Trucks</option>
-                        ${allTrucks.map(t => `<option value="${t}" ${State.mostSpentFilter.truck === t ? 'selected':''}>${t}</option>`).join('')}
+                        ${allTrucks.map(t => `<option value="${escapeHtml(t)}" ${State.mostSpentFilter.truck === t ? 'selected':''}>${escapeHtml(t)}</option>`).join('')}
                     </select>
                 </div>
                 <button class="sp-filter-clear" onclick="clearSpFilter('mostSpent')">
@@ -548,7 +548,7 @@ function renderMostSpent() {
                     <tbody>
                         ${rows.length ? rows.map(m => `
                             <tr class="fade-in">
-                                <td><strong>${m.truck_name ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(m.truck_name ?? '—')}</strong></td>
                                 <td>${m.year}</td>
                                 <td>${MONTH_NAMES[(m.month ?? 1) - 1]}</td>
                                 <td><span class="stat-pill red">${fmt(m.max_monthly_expense)}</span></td>
@@ -603,7 +603,7 @@ function renderYearlyCost() {
                     <label class="sp-filter-label">Truck</label>
                     <select class="sp-filter-select" onchange="updateSpFilter('yearly','truck',this.value)">
                         <option value="all">All Trucks</option>
-                        ${allTrucks.map(t => `<option value="${t}" ${State.yearlyFilter.truck === t ? 'selected':''}>${t}</option>`).join('')}
+                        ${allTrucks.map(t => `<option value="${escapeHtml(t)}" ${State.yearlyFilter.truck === t ? 'selected':''}>${escapeHtml(t)}</option>`).join('')}
                     </select>
                 </div>
                 <button class="sp-filter-clear" onclick="clearSpFilter('yearly')">
@@ -623,7 +623,7 @@ function renderYearlyCost() {
                     <tbody>
                         ${rows.length ? rows.map(r => `
                             <tr class="fade-in">
-                                <td><strong>${r.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(r.plate_number ?? '—')}</strong></td>
                                 <td>${r.year}</td>
                                 <td><strong style="color:var(--color-primary)">${fmt(r.yearly_truck_cost)}</strong></td>
                             </tr>
@@ -687,7 +687,7 @@ function renderMinMonthlyCost() {
                     <label class="sp-filter-label">Truck</label>
                     <select class="sp-filter-select" onchange="updateSpFilter('minMonthly','truck',this.value)">
                         <option value="all">All Trucks</option>
-                        ${allTrucks.map(t => `<option value="${t}" ${State.minMonthlyFilter.truck === t ? 'selected':''}>${t}</option>`).join('')}
+                        ${allTrucks.map(t => `<option value="${escapeHtml(t)}" ${State.minMonthlyFilter.truck === t ? 'selected':''}>${escapeHtml(t)}</option>`).join('')}
                     </select>
                 </div>
                 <button class="sp-filter-clear" onclick="clearSpFilter('minMonthly')">
@@ -707,7 +707,7 @@ function renderMinMonthlyCost() {
                     <tbody>
                         ${rows.length ? rows.map(r => `
                             <tr class="fade-in">
-                                <td><strong>${r.plate_number ?? '—'}</strong></td>
+                                <td><strong>${escapeHtml(r.plate_number ?? '—')}</strong></td>
                                 <td>${r.expense_year}</td>
                                 <td>${MONTH_NAMES[(r.expense_month ?? 1) - 1]}</td>
                                 <td><span class="stat-pill green">${fmt(r.min_monthly_expense)}</span></td>
@@ -824,8 +824,8 @@ function createTruckCard(truck) {
     card.innerHTML = `
         <div class="truck-card-header">
             <div>
-                <div class="truck-name">${truck.truckName || 'Unknown Truck'}</div>
-                <div class="truck-meta">${truck.plateNumber || ''}</div>
+                <div class="truck-name">${escapeHtml(truck.truckName || 'Unknown Truck')}</div>
+                <div class="truck-meta">${escapeHtml(truck.plateNumber || '')}</div>
                 ${spData?.max_expense != null
                     ? `<div class="truck-meta" style="margin-top:4px;font-size:11px;">
                         Max: ${fmt(spData.max_expense)} &nbsp;·&nbsp; Min: ${fmt(spData.min_expense)}
@@ -878,8 +878,8 @@ function openExpenseModal(truck) {
             return `
                 <tr class="expense-row">
                     <td>${dateStr}</td>
-                    <td>${e.expense_type ?? e.expenseType ?? '—'}</td>
-                    <td class="notes-cell">${e.notes ?? '—'}</td>
+                    <td>${escapeHtml(e.expense_type ?? e.expenseType ?? '—')}</td>
+                    <td class="notes-cell">${escapeHtml(e.notes ?? '—')}</td>
                     <td class="amount-cell">${fmt(e.amount)}</td>
                     <td>${proofBtn}</td>
                 </tr>`;

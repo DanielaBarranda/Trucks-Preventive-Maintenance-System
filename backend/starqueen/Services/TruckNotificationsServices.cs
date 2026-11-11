@@ -5,9 +5,14 @@ namespace starqueen.Services
 {
     public class TruckNotificationsServices
     {
-        public readonly TruckNotificationsRepository _repo = new TruckNotificationsRepository();
+        public readonly TruckNotificationsRepository _repo;
 
-        public Truck_Notifications GetNotificationById(int id)
+        public TruckNotificationsServices(TruckNotificationsRepository repo)
+        {
+            _repo = repo;
+        }
+
+        public Truck_Notifications? GetNotificationById(int id)
         {
             return _repo.GetById(id);
         }
@@ -24,7 +29,7 @@ namespace starqueen.Services
 
         public List<Truck_Notifications> GetAllNotifications()
         {
-            return (List<Truck_Notifications>)_repo.GetAll();
+            return _repo.GetAll().ToList();
         }
 
         public bool UpdateNotification(Truck_Notifications notification)

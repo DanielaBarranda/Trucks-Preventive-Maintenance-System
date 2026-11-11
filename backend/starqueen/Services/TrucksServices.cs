@@ -6,10 +6,15 @@ namespace starqueen.Services
 {
     public class TrucksServices
     {
-        public readonly TrucksRepository _trucksRepository = new TrucksRepository();
+        public readonly TrucksRepository _trucksRepository;
+
+        public TrucksServices(TrucksRepository trucksRepository)
+        {
+            _trucksRepository = trucksRepository;
+        }
 
         // 1. GetById
-        public Trucks GetTruckById(int id)
+        public Trucks? GetTruckById(int id)
         {
             return _trucksRepository.GetById(id);
         }
@@ -29,7 +34,7 @@ namespace starqueen.Services
         // 4. Get All
         public List<Trucks> GetAllTrucks()
         {
-            return (List<Trucks>)_trucksRepository.GetAll();
+            return _trucksRepository.GetAll().ToList();
         }
 
         // 5. Update

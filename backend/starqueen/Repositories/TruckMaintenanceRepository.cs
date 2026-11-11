@@ -3,7 +3,7 @@
 // ============================================================
 
 using Dapper;
-using Microsoft.Data.SqlClient;
+using starqueen.Data;
 using starqueen.Models;
 using System.Data;
 
@@ -11,16 +11,14 @@ namespace starqueen.Repositories
 {
     public class TruckMaintenanceLogsRepository : GenericRepositories<Truck_Maintenance_Logs>
     {
-        readonly string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=Starqueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
+        public TruckMaintenanceLogsRepository(IDbConnectionFactory db) : base(db) { }
 
         // ── SP_Maintenance_Monitoring_Alert_Detection ───────────────────────
         // Returns: per-component status, KM difference, overdue/replace counts
         // Used by: Maintenance Alert Detection section on Pending Maintenance page
         public List<MaintenanceAlert> GetMaintenanceAlerts()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<MaintenanceAlert>(
                 "EXEC SP_Maintenance_Monitoring_Alert_Detection"
             ).ToList();
@@ -31,7 +29,7 @@ namespace starqueen.Repositories
         // Used by: Near Replacement section on Pending Maintenance page
         public List<NearReplacement> GetNearReplacement()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<NearReplacement>(
                 "EXEC SP_Trucks_With_Multiple_Near_Replacement"
             ).ToList();
@@ -42,7 +40,7 @@ namespace starqueen.Repositories
         // Used by: Oldest Components section on Pending Maintenance page
         public List<OldestComponent> GetOldestComponents()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<OldestComponent>(
                 "EXEC SP_Oldest_Installed_Components_Per_Month"
             ).ToList();
@@ -53,7 +51,7 @@ namespace starqueen.Repositories
         // Used by: Components Overdue section on Pending Maintenance page
         public List<OverdueComponent> GetComponentsOverdueForReplacement()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<OverdueComponent>(
                 "EXEC SP_Components_Overdue_for_Replacement"
             ).ToList();
@@ -64,7 +62,7 @@ namespace starqueen.Repositories
         // Used by: Good Status Components section on Pending Maintenance page
         public List<GoodStatusComponent> GetComponentsWithGoodStatus()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<GoodStatusComponent>(
                 "EXEC SP_Number_Of_Truck_Components_With_Good_Status"
             ).ToList();
@@ -75,9 +73,29 @@ namespace starqueen.Repositories
         // Used by: Total Components section on Pending Maintenance page
         public List<TotalComponents> GetTotalComponentsPerTruck()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<TotalComponents>(
                 "EXEC SP_Total_Number_Of_Components_Installed_On_Each_Truck"
+            ).ToList();
+        }
+
+        // ── Last month-based submission per component ───────────────────────
+        // Month-based logs are saved with current_km = NULL.
+        // truckId <= 0 returns all trucks (driver filters client-side).
+        // Used by: Truck Odometer (lock/unlock) + Maintenance Log (month status)
+        public IEnumerable<dynamic> GetLastSubmissionPerComponent(int truckId)
+        {
+            using IDbConnection connection = CreateConnection();
+            return connection.Query<dynamic>(@"
+                SELECT tml.truck_id, tml.reference_id,
+                       MAX(tml.created_at) AS last_submitted_at,
+                       mr.month_interval
+                FROM   Truck_Maintenance_Logs tml
+                JOIN   Maintenance_Reference mr ON mr.reference_id = tml.reference_id
+                WHERE  tml.current_km IS NULL
+                  AND  (@TruckId <= 0 OR tml.truck_id = @TruckId)
+                GROUP BY tml.truck_id, tml.reference_id, mr.month_interval",
+                new { TruckId = truckId }
             ).ToList();
         }
     }

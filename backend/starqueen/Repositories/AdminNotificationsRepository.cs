@@ -1,20 +1,19 @@
 ﻿using Dapper;
+using starqueen.Data;
 using starqueen.Models;
-using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Transactions;
 
 namespace starqueen.Repositories
 {
     public class AdminNotificationsRepository : GenericRepositories<Admin_Notifications>
     {
-        readonly string connectionString =
-            "Server=(localdb)\\MSSQLLocalDB;Database=Starqueen_PMTS;" +
-            "Trusted_Connection=True;MultipleActiveResultSets=True";
+        public AdminNotificationsRepository(IDbConnectionFactory db) : base(db) { }
 
         // ── Mark single notification as read ────────────────────────────────
         public bool MarkAsRead(int id)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             int rows = connection.Execute(
                 "UPDATE [Admin_Notifications] SET is_read = 1 WHERE admin_notification_id = @Id",
                 new { Id = id }
@@ -25,7 +24,7 @@ namespace starqueen.Repositories
         // ── Mark all notifications as read ──────────────────────────────────
         public bool MarkAllAsRead()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             connection.Execute(
                 "UPDATE [Admin_Notifications] SET is_read = 1 WHERE is_read = 0"
             );
@@ -35,7 +34,7 @@ namespace starqueen.Repositories
         // ── SP: SP_Unread_Maintenance_Notifications_Per_Truck ────────────────
         public IEnumerable<dynamic> GetUnreadMaintenanceNotificationsPerTruck()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<dynamic>(
                 "EXEC SP_Unread_Maintenance_Notifications_Per_Truck"
             ).ToList();
@@ -44,7 +43,7 @@ namespace starqueen.Repositories
         // ── VIEW: VW_Notification_Acknowledgement_Rate ───────────────────────
         public IEnumerable<dynamic> GetNotificationAcknowledgementRate()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<dynamic>(
                 "SELECT * FROM VW_Notification_Acknowledgement_Rate"
             ).ToList();
@@ -53,7 +52,7 @@ namespace starqueen.Repositories
         // ── SP: SP_Notification_Acknowledgement_Rate ─────────────────────────
         public IEnumerable<dynamic> GetAcknowledgementRateViaSP()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<dynamic>(
                 "EXEC SP_Notification_Acknowledgement_Rate"
             ).ToList();
@@ -62,7 +61,7 @@ namespace starqueen.Repositories
         // ── SP: SP_Admin_Dashboard_Truck_Overview ────────────────────────────
         public IEnumerable<dynamic> GetAdminDashboardTruckOverview()
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
             return connection.Query<dynamic>(
                 "EXEC SP_Admin_Dashboard_Truck_Overview"
             ).ToList();
@@ -71,7 +70,9 @@ namespace starqueen.Repositories
         // ── Check thresholds and insert notifications (no duplicates) ────────
         public void CheckAndInsertNotifications(int truckId, int currentKm)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            // All writes below succeed or fail together
+            using var scope = new TransactionScope();
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -156,12 +157,14 @@ namespace starqueen.Repositories
                     }
                 );
             }
+
+            scope.Complete();
         }
 
         // ── Insert odometer update notification ──────────────────────────────
         public void InsertOdometerNotification(int truckId, int currentKm)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -190,7 +193,7 @@ namespace starqueen.Repositories
         // ── Insert expense notification ───────────────────────────────────────
         public void InsertExpenseNotification(int truckId, string expenseType, decimal amount)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -227,7 +230,9 @@ namespace starqueen.Repositories
         // so the admin modal and driver maintenance log both reflect resolved state
         public void ResolveNotificationAndNotify(int truckId, string expenseType)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            // All writes below succeed or fail together
+            using var scope = new TransactionScope();
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -240,62 +245,48 @@ namespace starqueen.Repositories
             string plateNumber = truck.plate_number ?? "";
             string truckType = truck.truck_type ?? "";
 
-            var resolved = connection.Query<dynamic>(@"
-                SELECT admin_notification_id, maintenance_task
-                FROM   Admin_Notifications
-                WHERE  truck_id    = @TruckId
-                  AND  (maintenance_task = @ExactTask
-                        OR maintenance_task LIKE @LikeTask)
-                  AND  is_resolved = 0
-                  AND  type        IN ('Urgent', 'Warning')",
-                new
-                {
-                    TruckId = truckId,
-                    ExactTask = expenseType,
-                    LikeTask = $"%{expenseType}%"
-                }
-            ).ToList();
+            // Prefer an exact task match (the driver form pre-fills the exact task name).
+            // Fall back to a partial match only when nothing matches exactly, so a short
+            // category like "Oil" can't resolve unrelated tasks when an exact one exists.
+            const string exactFilter = "maintenance_task = @Task";
+            const string likeFilter  = "maintenance_task LIKE @LikeTask";
+            var taskParams = new { TruckId = truckId, Task = expenseType, LikeTask = $"%{expenseType}%" };
+
+            string taskFilter = exactFilter;
+            var resolved = FindOpenAlerts(connection, taskFilter, taskParams);
+            if (!resolved.Any())
+            {
+                taskFilter = likeFilter;
+                resolved = FindOpenAlerts(connection, taskFilter, taskParams);
+            }
 
             if (!resolved.Any()) return;
 
             // ── Step 1: Resolve Admin_Notifications ──────────────────────────
-            connection.Execute(@"
+            connection.Execute($@"
                 UPDATE Admin_Notifications
                 SET    is_resolved = 1, resolved_at = @Now
                 WHERE  truck_id    = @TruckId
-                  AND  (maintenance_task = @ExactTask
-                        OR maintenance_task LIKE @LikeTask)
+                  AND  {taskFilter}
                   AND  is_resolved = 0
                   AND  type        IN ('Urgent', 'Warning')",
-                new
-                {
-                    TruckId = truckId,
-                    ExactTask = expenseType,
-                    LikeTask = $"%{expenseType}%",
-                    Now = DateTime.Now
-                }
+                new { TruckId = truckId, taskParams.Task, taskParams.LikeTask, Now = DateTime.Now }
             );
 
             // ── Step 2: FIXED — Also resolve Truck_Maintenance_Logs ──────────
             // This ensures the admin modal and driver maintenance log
             // both show the correct resolved state after expense submission
-            connection.Execute(@"
+            connection.Execute($@"
                 UPDATE Truck_Maintenance_Logs
                 SET    resolved = 'Yes'
                 WHERE  truck_id     = @TruckId
                   AND  reference_id IN (
                       SELECT reference_id
                       FROM   Maintenance_Reference
-                      WHERE  maintenance_task = @ExactTask
-                         OR  maintenance_task LIKE @LikeTask
+                      WHERE  {taskFilter}
                   )
                   AND  resolved = 'No'",
-                new
-                {
-                    TruckId = truckId,
-                    ExactTask = expenseType,
-                    LikeTask = $"%{expenseType}%"
-                }
+                taskParams
             );
 
             // ── Step 3: Insert resolution notification ───────────────────────
@@ -318,7 +309,18 @@ namespace starqueen.Repositories
                     Now = DateTime.Now
                 }
             );
+
+            scope.Complete();
         }
+
+        private static List<dynamic> FindOpenAlerts(IDbConnection connection, string taskFilter, object param)
+            => connection.Query<dynamic>($@"
+                SELECT admin_notification_id, maintenance_task
+                FROM   Admin_Notifications
+                WHERE  truck_id    = @TruckId
+                  AND  {taskFilter}
+                  AND  is_resolved = 0
+                  AND  type        IN ('Urgent', 'Warning')", param).ToList();
 
         // ── Threshold calculator (KM-based) ──────────────────────────────────
         private string CalculateStatus(int currentKm, Maintenance_Reference reference)
@@ -337,7 +339,9 @@ namespace starqueen.Repositories
             int truckId,
             List<ComponentMaintenanceDate> components)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            // All writes below succeed or fail together
+            using var scope = new TransactionScope();
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -359,8 +363,7 @@ namespace starqueen.Repositories
                 if (reference == null) continue;
                 if (!reference.month_interval.HasValue) continue;
 
-                int monthsElapsed = ((DateTime.Now.Year - comp.last_maintenance_date.Year) * 12)
-                                  + DateTime.Now.Month - comp.last_maintenance_date.Month;
+                int monthsElapsed = WholeMonthsBetween(comp.last_maintenance_date, DateTime.Now);
 
                 string status = CalculateStatusByMonth(monthsElapsed, reference.month_interval.Value);
 
@@ -425,12 +428,14 @@ namespace starqueen.Repositories
                     }
                 );
             }
+
+            scope.Complete();
         }
 
         // ── Insert month-based odometer notification ─────────────────────────
         public void InsertMonthOdometerNotification(int truckId, DateTime lastMaintenanceDate)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type
@@ -443,8 +448,7 @@ namespace starqueen.Repositories
             string plateNumber = truck.plate_number ?? "";
             string truckType = truck.truck_type ?? "";
 
-            int monthsElapsed = ((DateTime.Now.Year - lastMaintenanceDate.Year) * 12)
-                              + DateTime.Now.Month - lastMaintenanceDate.Month;
+            int monthsElapsed = WholeMonthsBetween(lastMaintenanceDate, DateTime.Now);
 
             string message = $"Month-based check submitted: {truckName} ({truckType}) {plateNumber} " +
                              $"— last maintenance: {lastMaintenanceDate:MMMM yyyy} " +
@@ -460,6 +464,14 @@ namespace starqueen.Repositories
             );
         }
 
+        // Whole calendar months from 'from' to 'to'. Jan 31 → Feb 1 is 0 months, not 1.
+        internal static int WholeMonthsBetween(DateTime from, DateTime to)
+        {
+            int months = (to.Year - from.Year) * 12 + to.Month - from.Month;
+            if (to.Day < from.Day) months--;
+            return Math.Max(0, months);
+        }
+
         // ── Threshold calculator (Month-based) ────────────────────────────────
         private string CalculateStatusByMonth(int monthsElapsed, int monthInterval)
         {
@@ -472,7 +484,7 @@ namespace starqueen.Repositories
         // ── Insert activity notification ──────────────────────────────────────
         public void InsertActivityNotification(int truckId, string farm, string address, string driverName)
         {
-            using IDbConnection connection = new SqlConnection(connectionString);
+            using IDbConnection connection = CreateConnection();
 
             var truck = connection.QueryFirstOrDefault<dynamic>(
                 @"SELECT truck_id, truck_name, plate_number, truck_type

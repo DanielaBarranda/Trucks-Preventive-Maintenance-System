@@ -333,13 +333,13 @@ function renderFullCard(a) {
                     </svg>
                     ${formatDate(a.date)}
                 </span>
-                <span class="activity-farm">${a.farm || '—'}</span>
+                <span class="activity-farm">${escapeHtml(a.farm || '—')}</span>
             </div>
             <div class="activity-card-body">
                 <div class="activity-details-grid">
                     <div class="activity-detail">
                         <span class="activity-detail-label">Address</span>
-                        <span class="activity-detail-value">${a.address || '—'}</span>
+                        <span class="activity-detail-value">${escapeHtml(a.address || '—')}</span>
                     </div>
                     <div class="activity-detail">
                         <span class="activity-detail-label">Call Time</span>
@@ -347,11 +347,11 @@ function renderFullCard(a) {
                     </div>
                     <div class="activity-detail">
                         <span class="activity-detail-label">Plant</span>
-                        <span class="activity-detail-value">${a.plant || 'N/A'}</span>
+                        <span class="activity-detail-value">${escapeHtml(a.plant || 'N/A')}</span>
                     </div>
                     <div class="activity-detail">
                         <span class="activity-detail-label">Driver</span>
-                        <span class="activity-detail-value">${a.driver_name ?? a.driverName ?? '—'}</span>
+                        <span class="activity-detail-value">${escapeHtml(a.driver_name ?? a.driverName ?? '—')}</span>
                     </div>
                 </div>
                 <div class="activity-times">
@@ -418,11 +418,11 @@ function renderCompactCard(a) {
                 <div class="activity-compact-row">
                     <div class="activity-compact-cell">
                         <span class="activity-compact-label">Farm</span>
-                        <span class="activity-compact-value">${a.farm || '—'}</span>
+                        <span class="activity-compact-value">${escapeHtml(a.farm || '—')}</span>
                     </div>
                     <div class="activity-compact-cell">
                         <span class="activity-compact-label">Address</span>
-                        <span class="activity-compact-value">${a.address || '—'}</span>
+                        <span class="activity-compact-value">${escapeHtml(a.address || '—')}</span>
                     </div>
                     <div class="activity-compact-cell">
                         <span class="activity-compact-label">Call Time</span>
@@ -430,11 +430,11 @@ function renderCompactCard(a) {
                     </div>
                     <div class="activity-compact-cell">
                         <span class="activity-compact-label">Plant</span>
-                        <span class="activity-compact-value">${a.plant || 'N/A'}</span>
+                        <span class="activity-compact-value">${escapeHtml(a.plant || 'N/A')}</span>
                     </div>
                     <div class="activity-compact-cell">
                         <span class="activity-compact-label">Driver</span>
-                        <span class="activity-compact-value">${a.driver_name ?? a.driverName ?? '—'}</span>
+                        <span class="activity-compact-value">${escapeHtml(a.driver_name ?? a.driverName ?? '—')}</span>
                     </div>
                     <div class="activity-compact-time">
                         <span class="activity-compact-time-label">Departure</span>

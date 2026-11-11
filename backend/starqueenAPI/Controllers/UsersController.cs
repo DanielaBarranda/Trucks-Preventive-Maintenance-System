@@ -1,49 +1,60 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using starqueen.Models;
 using starqueen.Services;
 
 namespace starqueenAPI.Controllers
 {
+    // Passwords are never returned. Use /api/auth/change-password to change one.
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
-        readonly UsersServices _usersServices = new UsersServices();
+        readonly UsersServices _usersServices;
 
-        // POST /api/users
-        [HttpPost]
-        public bool AddUser(Users user)
+        public UsersController(UsersServices usersServices)
         {
-            return _usersServices.AddUser(user);
+            _usersServices = usersServices;
         }
+
+        bool IsAdmin => User.IsInRole(Roles.Admin);
+        bool IsSelfOrAdmin(int id) => IsAdmin || User.GetUserId() == id;
+
+        // POST /api/users  (password is hashed before saving)
+        [HttpPost]
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult AddUser(Users user)
+            => _usersServices.AddUser(user) ? Ok(true) : BadRequest("Failed to add user.");
 
         // GET /api/users
         [HttpGet]
-        public List<Users> GetAllUsers()
-        {
-            return _usersServices.GetAllUsers();
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public List<UserResponse> GetAllUsers()
+            => _usersServices.GetAllUsers().Select(UserResponse.From).ToList();
 
-        // GET /api/users/{id}
+        // GET /api/users/{id}  (your own account, or any account as Admin)
         [HttpGet("{id}")]
-        public Users? GetUserById(int id)
+        public ActionResult<UserResponse> GetUserById(int id)
         {
-            return _usersServices.GetUserById(id);
+            if (!IsSelfOrAdmin(id)) return Forbid();
+            var user = _usersServices.GetUserById(id);
+            return user == null ? NotFound() : UserResponse.From(user);
         }
 
-        // PUT /api/users/{id}
+        // PUT /api/users/{id}  (username/email; role only as Admin)
         [HttpPut("{id}")]
-        public bool UpdateUser(int id, Users user)
+        public IActionResult UpdateUser(int id, UserUpdateRequest request)
         {
-            user.user_id = id;
-            return _usersServices.UpdateUser(user);
+            if (!IsSelfOrAdmin(id)) return Forbid();
+            return _usersServices.UpdateUser(id, request, allowRoleChange: IsAdmin)
+                ? Ok(true)
+                : NotFound();
         }
 
         // DELETE /api/users/{id}
         [HttpDelete("{id}")]
-        public bool DeleteUser(int id)
-        {
-            return _usersServices.DeleteUser(id);
-        }
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult DeleteUser(int id)
+            => _usersServices.DeleteUser(id) ? Ok(true) : NotFound();
     }
 }

@@ -9,11 +9,16 @@ namespace starqueen.Services
 {
     public class TruckExpensesServices
     {
-        public readonly TruckExpensesRepository _repo = new TruckExpensesRepository();
+        public readonly TruckExpensesRepository _repo;
+
+        public TruckExpensesServices(TruckExpensesRepository repo)
+        {
+            _repo = repo;
+        }
 
         // ── Basic CRUD ───────────────────────────────────────────────────────
 
-        public Truck_Expenses GetExpenseById(int id)
+        public Truck_Expenses? GetExpenseById(int id)
             => _repo.GetById(id);
 
         public bool AddExpense(Truck_Expenses expense)
@@ -23,7 +28,7 @@ namespace starqueen.Services
             => _repo.Delete(id);
 
         public List<Truck_Expenses> GetAllExpenses()
-            => (List<Truck_Expenses>)_repo.GetAll();
+            => _repo.GetAll().ToList();
 
         public bool UpdateExpense(Truck_Expenses expense)
             => _repo.Update(expense);

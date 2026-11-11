@@ -2,6 +2,7 @@
 //  STARQUEEN PMTS — TruckActivityController.cs
 // ============================================================
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using starqueen.Models;
 using starqueen.Services;
@@ -13,9 +14,22 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class TruckActivityController : ControllerBase
     {
-        readonly TruckActivityServices _services = new TruckActivityServices();
-        readonly TruckActivityRepository _repo = new TruckActivityRepository();
-        readonly AdminNotificationsRepository _notifRepo = new AdminNotificationsRepository();
+        readonly TruckActivityServices _services;
+        readonly TruckActivityRepository _repo;
+        readonly AdminNotificationsRepository _notifRepo;
+        readonly ILogger<TruckActivityController> _logger;
+
+        public TruckActivityController(
+            TruckActivityServices services,
+            TruckActivityRepository repo,
+            AdminNotificationsRepository notifRepo,
+            ILogger<TruckActivityController> logger)
+        {
+            _logger = logger;
+            _services = services;
+            _repo = repo;
+            _notifRepo = notifRepo;
+        }
 
         // ── Standard CRUD ────────────────────────────────────────────────────
 
@@ -24,32 +38,25 @@ namespace starqueenAPI.Controllers
         [HttpPost]
         public IActionResult AddTruckActivity(Truck_Activity activity)
         {
+            bool saved = _services.AddTruckActivity(activity);
+            if (!saved) return BadRequest("Failed to save activity.");
+
+            // Notify admin that driver logged a new activity (non-fatal if it fails)
             try
             {
-                bool saved = _services.AddTruckActivity(activity);
-                if (!saved) return BadRequest("Failed to save activity.");
-
-                // Notify admin that driver logged a new activity
-                try
-                {
-                    _notifRepo.InsertActivityNotification(
-                        activity.truck_id,
-                        activity.farm ?? "—",
-                        activity.address ?? "—",
-                        activity.driver_name ?? "—"
-                    );
-                }
-                catch (Exception notifEx)
-                {
-                    Console.WriteLine($"[Activity notification error] {notifEx.Message}");
-                }
-
-                return Ok(true);
+                _notifRepo.InsertActivityNotification(
+                    activity.truck_id,
+                    activity.farm ?? "—",
+                    activity.address ?? "—",
+                    activity.driver_name ?? "—"
+                );
             }
-            catch (Exception ex)
+            catch (Exception notifEx)
             {
-                return StatusCode(500, ex.Message);
+                _logger.LogError(notifEx, "Activity notification failed for truck {TruckId}", activity.truck_id);
             }
+
+            return Ok(true);
         }
 
         // GET /api/truckactivity
@@ -59,21 +66,23 @@ namespace starqueenAPI.Controllers
 
         // GET /api/truckactivity/{id}
         [HttpGet("{id}")]
-        public Truck_Activity? GetTruckActivityById(int id)
-            => _services.GetTruckActivityById(id);
+        public ActionResult<Truck_Activity> GetTruckActivityById(int id)
+            => _services.GetTruckActivityById(id) is { } a ? a : NotFound();
 
         // PUT /api/truckactivity/{id}
+        // Drivers use this to log departure/arrival. Send the full record.
         [HttpPut("{id}")]
-        public bool UpdateTruckActivity(int id, Truck_Activity activity)
+        public IActionResult UpdateTruckActivity(int id, Truck_Activity activity)
         {
             activity.truck_activity_id = id;
-            return _services.UpdateTruckActivity(activity);
+            return _services.UpdateTruckActivity(activity) ? Ok(true) : NotFound();
         }
 
         // DELETE /api/truckactivity/{id}
         [HttpDelete("{id}")]
-        public bool DeleteTruckActivity(int id)
-            => _services.DeleteTruckActivity(id);
+        [Authorize(Roles = Roles.Admin)]
+        public IActionResult DeleteTruckActivity(int id)
+            => _services.DeleteTruckActivity(id) ? Ok(true) : NotFound();
 
         // ── SP-based endpoints ───────────────────────────────────────────────
 
@@ -81,18 +90,14 @@ namespace starqueenAPI.Controllers
         // Calls SP_Driver_Performance_Activity_Summary
         [HttpGet("driver-summary")]
         public IActionResult GetDriverSummary()
-        {
-            try { return Ok(_repo.GetDriverPerformanceSummary()); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
-        }
+        
+            => Ok(_repo.GetDriverPerformanceSummary());
 
         // GET /api/truckactivity/trip-summary
         // Calls SP_Monitoring_The_First_And_Last_Trip_Of_A_Truck
         [HttpGet("trip-summary")]
         public IActionResult GetTripSummary()
-        {
-            try { return Ok(_repo.GetFirstAndLastTrip()); }
-            catch (Exception ex) { return StatusCode(500, ex.Message); }
-        }
+        
+            => Ok(_repo.GetFirstAndLastTrip());
     }
 }

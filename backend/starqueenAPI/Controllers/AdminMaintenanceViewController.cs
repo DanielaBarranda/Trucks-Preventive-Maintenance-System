@@ -8,21 +8,22 @@ namespace starqueenAPI.Controllers
     [ApiController]
     public class AdminMaintenanceViewController : ControllerBase
     {
-        readonly AdminMaintenanceViewServices _services = new AdminMaintenanceViewServices();
+        readonly AdminMaintenanceViewServices _services;
+
+        public AdminMaintenanceViewController(AdminMaintenanceViewServices services)
+        {
+            _services = services;
+        }
 
         // GET /api/adminmaintenanceview
         // Used by Pending Maintenance page on the dashboard
         [HttpGet]
         public List<Admin_Maintenance_View> GetAllMaintenanceView()
-        {
-            return _services.GetAllMaintenanceView();
-        }
+            => _services.GetAllMaintenanceView();
 
         // GET /api/adminmaintenanceview/{id}
         [HttpGet("{id}")]
-        public Admin_Maintenance_View? GetMaintenanceViewById(int id)
-        {
-            return _services.GetMaintenanceViewById(id);
-        }
+        public ActionResult<Admin_Maintenance_View> GetMaintenanceViewById(int id)
+            => _services.GetMaintenanceViewById(id) is { } v ? v : NotFound();
     }
 }

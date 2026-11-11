@@ -175,8 +175,8 @@ function renderAlerts() {
                     </svg>
                 </div>
                 <div class="alert-info">
-                    <h4>${a.maintenance_item ?? '—'}</h4>
-                    <p>${a.plate_number ?? '—'}${kmInfo}</p>
+                    <h4>${escapeHtml(a.maintenance_item ?? '—')}</h4>
+                    <p>${escapeHtml(a.plate_number ?? '—')}${kmInfo}</p>
                 </div>
                 <div class="alert-status">
                     <span class="badge ${badge}">${a.status.toUpperCase()}</span>

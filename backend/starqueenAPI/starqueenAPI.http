@@ -1,6 +1,14 @@
-@starqueenAPI_HostAddress = http://localhost:5247
+@starqueenAPI_HostAddress = https://localhost:7273
 
-GET {{starqueenAPI_HostAddress}}/weatherforecast/
+# Most endpoints need a login cookie. Log in first, then call the others.
+POST {{starqueenAPI_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@example.com", "password": "your-password" }
+
+###
+
+GET {{starqueenAPI_HostAddress}}/api/trucks
 Accept: application/json
 
 ###

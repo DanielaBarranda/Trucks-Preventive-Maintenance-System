@@ -9,11 +9,16 @@ namespace starqueen.Services
 {
     public class TruckMaintenanceLogsServices
     {
-        public readonly TruckMaintenanceLogsRepository _repo = new TruckMaintenanceLogsRepository();
+        public readonly TruckMaintenanceLogsRepository _repo;
+
+        public TruckMaintenanceLogsServices(TruckMaintenanceLogsRepository repo)
+        {
+            _repo = repo;
+        }
 
         // ── Basic CRUD ───────────────────────────────────────────────────────
 
-        public Truck_Maintenance_Logs GetMaintenanceLogById(int id)
+        public Truck_Maintenance_Logs? GetMaintenanceLogById(int id)
             => _repo.GetById(id);
 
         public bool AddMaintenanceLog(Truck_Maintenance_Logs log)
@@ -23,7 +28,7 @@ namespace starqueen.Services
             => _repo.Delete(id);
 
         public List<Truck_Maintenance_Logs> GetAllMaintenanceLogs()
-            => (List<Truck_Maintenance_Logs>)_repo.GetAll();
+            => _repo.GetAll().ToList();
 
         public bool UpdateMaintenanceLog(Truck_Maintenance_Logs log)
             => _repo.Update(log);
@@ -51,5 +56,9 @@ namespace starqueen.Services
         // ── SP: SP_Total_Number_Of_Components_Installed_On_Each_Truck ────────
         public List<TotalComponents> GetTotalComponentsPerTruck()
             => _repo.GetTotalComponentsPerTruck();
+
+        // ── Last month-based submission per component (truckId <= 0 → all) ──
+        public IEnumerable<dynamic> GetLastSubmissionPerComponent(int truckId)
+            => _repo.GetLastSubmissionPerComponent(truckId);
     }
 }
