@@ -374,3 +374,158 @@ BEGIN
     SELECT @org_id AS organization_id, @user_id AS user_id;
 END
 GO
+
+/* =====================================================================
+   REPORTS
+   All run under Row-Level Security: they only ever see the caller's
+   organization.
+   ===================================================================== */
+
+-- Per vehicle: readings, expenses, open alerts, unread notifications, last trip
+CREATE PROCEDURE dbo.rpt_FleetOverview
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        v.id            AS vehicle_id,
+        v.name          AS vehicle_name,
+        v.plate_number,
+        vt.name         AS vehicle_type,
+        d.full_name     AS assigned_driver_name,
+        lr.reading      AS latest_reading,
+        ex.total_expenses, ex.min_expense, ex.max_expense,
+        ISNULL(ex.expense_count, 0) AS expense_count,
+        ex.last_expense_date,
+        (SELECT COUNT(*) FROM dbo.MaintenanceLogs ml
+          WHERE ml.vehicle_id = v.id AND ml.resolved = 0 AND ml.status <> 'Done') AS open_alerts,
+        (SELECT COUNT(*) FROM dbo.Notifications n
+          WHERE n.vehicle_id = v.id AND n.is_read = 0)                            AS unread_notifications,
+        (SELECT MAX(COALESCE(t.arrived_at, t.departed_at)) FROM dbo.Trips t
+          WHERE t.vehicle_id = v.id)                                              AS last_trip_at
+    FROM dbo.Vehicles v
+    JOIN dbo.VehicleTypes vt ON vt.id = v.vehicle_type_id
+    LEFT JOIN dbo.Users d    ON d.id = v.assigned_driver_id
+    OUTER APPLY (SELECT TOP 1 o.reading FROM dbo.OdometerReadings o
+                 WHERE o.vehicle_id = v.id ORDER BY o.recorded_at DESC, o.id DESC) lr
+    OUTER APPLY (SELECT SUM(e.amount) AS total_expenses, MIN(e.amount) AS min_expense,
+                        MAX(e.amount) AS max_expense, COUNT(*) AS expense_count,
+                        MAX(e.expense_date) AS last_expense_date
+                 FROM dbo.Expenses e WHERE e.vehicle_id = v.id) ex
+    ORDER BY v.plate_number;
+END
+GO
+
+-- Per vehicle x schedule: status measured since the last service
+--   Distance: Overdue >= km_overdue, Replace >= km_replace, Warning >= km_warning, else Good
+--   Months:   Overdue >= interval + 1, Replace >= interval, Warning >= floor(80% of interval) (when >= 1)
+--   Result:   the worse of the two; "No Data" when neither can be computed
+--   Last service: latest 'Done' log; otherwise reading 0 and the vehicle's created_at
+CREATE PROCEDURE dbo.rpt_MaintenanceStatus
+    @vehicle_id INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @now DATETIME2 = SYSUTCDATETIME();
+
+    SELECT
+        v.id           AS vehicle_id,
+        v.plate_number,
+        s.id           AS schedule_id,
+        s.task,
+        ls.service_date    AS last_service_date,
+        ls.reading_at_log  AS last_service_reading,
+        cr.reading         AS current_reading,
+        dist.distance_since,
+        mon.months_since,
+        CASE (SELECT MAX(r) FROM (VALUES (dr.rank_), (mr.rank_)) AS x(r))
+            WHEN 4 THEN 'Overdue'
+            WHEN 3 THEN 'Replace'
+            WHEN 2 THEN 'Warning'
+            WHEN 1 THEN 'Good'
+            ELSE 'No Data'
+        END AS status
+    FROM dbo.Vehicles v
+    JOIN dbo.MaintenanceSchedules s ON s.vehicle_type_id = v.vehicle_type_id
+    OUTER APPLY (SELECT TOP 1 o.reading FROM dbo.OdometerReadings o
+                 WHERE o.vehicle_id = v.id ORDER BY o.recorded_at DESC, o.id DESC) cr
+    OUTER APPLY (SELECT TOP 1 COALESCE(l.resolved_at, l.created_at) AS service_date, l.reading_at_log
+                 FROM dbo.MaintenanceLogs l
+                 WHERE l.vehicle_id = v.id AND l.schedule_id = s.id AND l.status = 'Done'
+                 ORDER BY COALESCE(l.resolved_at, l.created_at) DESC, l.id DESC) ls
+    CROSS APPLY (SELECT CASE WHEN cr.reading IS NULL THEN NULL
+                             ELSE cr.reading - COALESCE(ls.reading_at_log, 0) END AS distance_since) dist
+    CROSS APPLY (SELECT COALESCE(ls.service_date, v.created_at) AS since) b
+    CROSS APPLY (SELECT CASE WHEN m.raw < 0 THEN 0 ELSE m.raw END AS months_since
+                 FROM (SELECT DATEDIFF(month, b.since, @now)
+                              - CASE WHEN DAY(@now) < DAY(b.since) THEN 1 ELSE 0 END AS raw) m) mon
+    CROSS APPLY (SELECT CASE
+        WHEN dist.distance_since IS NULL
+          OR (s.km_warning IS NULL AND s.km_replace IS NULL AND s.km_overdue IS NULL) THEN 0
+        WHEN s.km_overdue IS NOT NULL AND dist.distance_since >= s.km_overdue THEN 4
+        WHEN s.km_replace IS NOT NULL AND dist.distance_since >= s.km_replace THEN 3
+        WHEN s.km_warning IS NOT NULL AND dist.distance_since >= s.km_warning THEN 2
+        ELSE 1 END AS rank_) dr
+    CROSS APPLY (SELECT CASE
+        WHEN s.month_interval IS NULL THEN 0
+        WHEN mon.months_since >= s.month_interval + 1 THEN 4
+        WHEN mon.months_since >= s.month_interval THEN 3
+        WHEN FLOOR(s.month_interval * 0.8) >= 1
+         AND mon.months_since >= FLOOR(s.month_interval * 0.8) THEN 2
+        ELSE 1 END AS rank_) mr
+    WHERE v.is_active = 1
+      AND (@vehicle_id IS NULL OR v.id = @vehicle_id)
+    ORDER BY v.plate_number, s.task;
+END
+GO
+
+-- Per vehicle and month: total / min / max / count of expenses
+CREATE PROCEDURE dbo.rpt_MonthlyExpenses
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        e.vehicle_id,
+        v.plate_number,
+        YEAR(e.expense_date)  AS [year],
+        MONTH(e.expense_date) AS [month],
+        SUM(e.amount)         AS total,
+        MIN(e.amount)         AS [min],
+        MAX(e.amount)         AS [max],
+        COUNT(*)              AS [count]
+    FROM dbo.Expenses e
+    JOIN dbo.Vehicles v ON v.id = e.vehicle_id
+    GROUP BY e.vehicle_id, v.plate_number, YEAR(e.expense_date), MONTH(e.expense_date)
+    ORDER BY [year], [month], v.plate_number;
+END
+GO
+
+-- Per driver: trips, departures, arrivals, destinations, expenses, first/last trip
+CREATE PROCEDURE dbo.rpt_DriverActivity
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        u.id         AS driver_id,
+        u.full_name  AS driver_name,
+        v.id         AS vehicle_id,
+        v.plate_number,
+        ISNULL(t.trips, 0)                 AS trips,
+        ISNULL(t.departures, 0)            AS departures,
+        ISNULL(t.arrivals, 0)              AS arrivals,
+        ISNULL(t.distinct_destinations, 0) AS distinct_destinations,
+        (SELECT SUM(e.amount) FROM dbo.Expenses e WHERE e.driver_id = u.id) AS total_expenses,
+        t.first_trip_at,
+        t.last_trip_at
+    FROM dbo.Users u
+    LEFT JOIN dbo.Vehicles v ON v.assigned_driver_id = u.id
+    OUTER APPLY (SELECT COUNT(*)                       AS trips,
+                        COUNT(tr.departed_at)          AS departures,
+                        COUNT(tr.arrived_at)           AS arrivals,
+                        COUNT(DISTINCT tr.destination) AS distinct_destinations,
+                        MIN(tr.departed_at)            AS first_trip_at,
+                        MAX(tr.arrived_at)             AS last_trip_at
+                 FROM dbo.Trips tr WHERE tr.driver_id = u.id) t
+    WHERE u.role = 'Driver'
+    ORDER BY u.full_name;
+END
+GO
