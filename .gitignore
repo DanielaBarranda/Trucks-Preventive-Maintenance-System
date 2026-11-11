@@ -1,0 +1,19 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
+
+# Secrets / local config
+appsettings.*.local.json
+*.pubxml
+.env
+
+# User-uploaded files (keep the folder only)
+backend/starqueenAPI/wwwroot/uploads/*
+!backend/starqueenAPI/wwwroot/uploads/.gitkeep
+
+# OS / editor
+Thumbs.db
+.DS_Store

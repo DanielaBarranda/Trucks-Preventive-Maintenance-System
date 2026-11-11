@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Truck Odometer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="../CSS/truck-odometer.css">
+</head>
+
+<body data-sidebar-page="truck-odometer">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="odo-page-header">
+            <div class="odo-header-left">
+                <div class="odo-header-meta">
+                    <span class="odo-plate-label">PLATE NUMBER:</span>
+                    <span class="odo-plate-value" id="plateNumber">—</span>
+                </div>
+                <h1 class="odo-page-title">Truck Odometer</h1>
+            </div>
+        </div>
+
+        <!-- Toggle -->
+        <div class="odo-toggle-wrapper" id="modeToggle">
+            <button class="odo-toggle-btn active" id="toggleKm" data-mode="km">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v4l3 3"/>
+                </svg>
+                By Odometer KM
+            </button>
+            <button class="odo-toggle-btn" id="toggleMonth" data-mode="month">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <path d="M3 9h18M8 4v5M16 4v5"/>
+                </svg>
+                By Month
+            </button>
+        </div>
+
+        <!-- ── KM MODE ── -->
+        <section class="odo-card odo-card--km" id="kmCard">
+            <div class="odo-km-inner">
+            <div class="odo-notice">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span><strong>Required:</strong> Please enter the current odometer reading to continue.</span>
+            </div>
+
+            <div class="odo-input-group">
+                <label class="odo-input-label">
+                    Current Odometer Reading <span class="odo-required">*</span>
+                </label>
+                <div class="odo-display" id="odometerDisplay" aria-live="polite">
+                    <span class="odo-display-value placeholder" id="displayValue">—</span>
+                    <span class="odo-display-unit">KM</span>
+                </div>
+            </div>
+
+            <div class="odo-keypad">
+                <button class="odo-key digit" data-val="1">1</button>
+                <button class="odo-key digit" data-val="2">2</button>
+                <button class="odo-key digit" data-val="3">3</button>
+                <button class="odo-key digit" data-val="4">4</button>
+                <button class="odo-key digit" data-val="5">5</button>
+                <button class="odo-key digit" data-val="6">6</button>
+                <button class="odo-key digit" data-val="7">7</button>
+                <button class="odo-key digit" data-val="8">8</button>
+                <button class="odo-key digit" data-val="9">9</button>
+                <button class="odo-key odo-clear" id="clearBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+                <button class="odo-key digit" data-val="0">0</button>
+                <button class="odo-key odo-back" id="backBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12H3M9 6l-6 6 6 6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="odo-actions">
+                <button class="odo-btn-cancel" id="cancelBtn">Cancel</button>
+                <button class="odo-btn-submit" id="submitBtn">Submit Reading</button>
+            </div>
+            </div><!-- end odo-km-inner -->
+        </section>
+
+        <!-- ── MONTH MODE ── -->
+        <section class="odo-card odo-card--month" id="monthCard" style="display:none;">
+
+            <!-- Main notice -->
+            <div class="odo-notice odo-notice--blue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>
+                    <strong>Month-Based Tracking</strong> — Select the last maintenance month
+                    and year for each component. Components are automatically locked until
+                    their maintenance interval is reached.
+                </span>
+            </div>
+
+            <!-- Reminder notice — UPDATED: added locking mechanism info -->
+            <div class="odo-notice odo-notice--warning" style="margin-top:10px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span>
+                    <strong>Reminder:</strong> This tracking is for scheduling purposes only.
+                    Actual component conditions may vary. <strong>Physical inspection is highly
+                    recommended</strong> before and after any maintenance activity.
+                    Components that have already been submitted are <strong>automatically locked</strong>
+                    until their maintenance interval is reached — this prevents duplicate submissions.
+                    Locked components will show their last submission date and next due date.
+                </span>
+            </div>
+
+            <!-- Summary count -->
+            <div id="componentSummary" class="odo-component-summary" style="display:none;"></div>
+
+            <!-- Component list — populated by JS -->
+            <div id="componentList" class="odo-component-list"></div>
+
+            <div class="odo-actions" style="margin-top:20px;">
+                <button class="odo-btn-cancel" id="cancelBtnMonth">Cancel</button>
+                <button class="odo-btn-submit" id="submitBtnMonth">Submit Check</button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+    <script src="../../ADMIN/JS/config.js"></script>
+    <script src="../JS/session-fix.js"></script>
+    <script src="../JS/driver-sidebar.js"></script>
+    <script src="../JS/truck-odometer.js"></script>
+</body>
+</html>

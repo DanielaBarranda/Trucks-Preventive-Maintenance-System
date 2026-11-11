@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/sp-sections.css">
+</head>
+
+<body data-sidebar-page="dashboard">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Welcome Banner -->
+        <section class="welcome-banner">
+            <div class="welcome-banner-left">
+                <p class="welcome-label">WELCOME BACK</p>
+                <h1 class="welcome-name" id="welcomeUserName">User</h1>
+                <p class="welcome-sub">StarQueen Planned Maintenance and Tracking System</p>
+            </div>
+            <div class="welcome-banner-right">
+                <div class="welcome-date" id="welcomeDate"></div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <div class="actions-grid" id="quickActionsGrid"></div>
+        </section>
+
+        <!-- Content Grid -->
+        <section class="content-grid">
+            <div class="maintenance-alerts">
+                <div class="alerts-header">
+                    <h2>Maintenance Alerts Overview</h2>
+                </div>
+                <div class="alerts-list" id="alertsList">
+                    <div class="empty-state">
+                        <p>No active maintenance alerts at this time</p>
+                    </div>
+                </div>
+                <div class="view-all">
+                    <a href="#" class="view-all-link" id="viewAllAlerts">View All</a>
+                </div>
+            </div>
+
+            <div class="disclaimer-box">
+                <h3>Disclaimer:</h3>
+                <p class="disclaimer-intro">Indicators guide the condition of parts based on typical intervals:</p>
+                <ul class="disclaimer-list">
+                    <li><strong>Good</strong> - Part is still within safe Typical Interval.</li>
+                    <li><strong>Warning</strong> - Approaching end of Typical Interval.</li>
+                    <li><strong>Replace</strong> - Typical Interval reached; part needs replacement.</li>
+                    <li><strong>Overdue</strong> - Past the Typical Interval; immediate attention or replacement required.</li>
+                </ul>
+                <p class="disclaimer-note"><strong>Note:</strong> Actual conditions may vary and should be verified during physical inspection.</p>
+            </div>
+        </section>
+
+        <!-- Fleet Health Overview -->
+        <!-- SP_Number_Of_Truck_Components_With_Good_Status + SP_Total_Number_Of_Components_Installed_On_Each_Truck -->
+        <div id="fleetHealthSection"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/admin-dashboard.js"></script>
+</body>
+</html>

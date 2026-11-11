@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Expenses</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/sp-sections.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/expenses.css">
+</head>
+
+<body data-sidebar-page="expenses">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="page-header-left">
+                <h1 class="page-title">Expenses</h1>
+                <p class="page-subtitle">Track and manage all related expenses</p>
+            </div>
+        </section>
+
+        <!-- Overall Total Card -->
+        <section class="total-card">
+            <div class="total-card-left">
+                <p class="total-label">Overall Total Expense</p>
+                <h2 class="total-amount" id="totalAmount">₱0.00</h2>
+                <p class="total-meta" id="totalMeta">0 Transactions</p>
+            </div>
+            <div class="total-card-right">
+                <p class="total-period" id="totalPeriod"></p>
+                <select class="period-select" id="periodSelect">
+                    <option value="all">All Time</option>
+                    <option value="monthly">Monthly History</option>
+                </select>
+                <div class="month-year-filters" id="monthYearFilters" style="display:none;">
+                    <select class="period-select" id="monthSelect">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <select class="period-select" id="yearSelect"></select>
+                </div>
+            </div>
+        </section>
+
+        <!-- SP: Expense Analysis (SP_Expense_Analysis_with_Monthly_Filtering) -->
+        <div id="expenseAnalysisSection"></div>
+
+        <!-- SP: Monthly Cost (SP_Total_Monthly_Maintenance_Cost_Per_Trucks) -->
+        <div id="monthlyCostSection"></div>
+
+        <!-- SP: Most Spent (SP_Most_Spent_Truck_Maintenance_per_Month) -->
+        <div id="mostSpentSection"></div>
+
+        <!-- SP: Yearly Cost (SP_Total_Yearly_Maintenance_Cost_Per_Truck) -->
+        <div id="yearlyCostSection"></div>
+
+        <!-- SP: Minimum Monthly Cost (SP_Minimum_Monthly_Maintenance_Cost_Per_Truck) -->
+        <div id="minMonthlyCostSection"></div>
+
+        <!-- Controls -->
+        <section class="controls-section">
+            <div class="search-wrapper">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="7.5" cy="7.5" r="5.5" stroke="#888" stroke-width="1.5"/>
+                    <path d="M12.5 12.5L16 16" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input type="text" id="searchInput" class="search-input"
+                       placeholder="Search truck name or plate..." />
+            </div>
+            <div class="filters-wrapper">
+                <select id="typeFilter" class="filter-select">
+                    <option value="all">All Types</option>
+                    <option value="ELF">ELF Trucks</option>
+                    <option value="FWD">FWD Trucks</option>
+                    <option value="TW">TW Trucks</option>
+                    <option value="10W">10W Trucks</option>
+                    <option value="WING_VAN">Wing Van Trucks</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Trucks List -->
+        <section class="trucks-section" id="trucksList">
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" stroke="#ccc" stroke-width="2"/>
+                    <path d="M24 16v8M24 30v2" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <p>No trucks found</p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Expense Detail Modal -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="expense-modal-box">
+            <div class="expense-modal-header">
+                <div class="expense-modal-title-row">
+                    <div>
+                        <h2 id="modalTruckName">Truck Name</h2>
+                        <p id="modalKm" class="modal-km-text"></p>
+                        <p id="modalKmDate" class="modal-date-text"></p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span id="modalTxCount" class="modal-tx-count">0 Transactions</span>
+                        <button class="modal-close-btn" id="closeModal">✕</button>
+                    </div>
+                </div>
+            </div>
+            <div class="expense-modal-body">
+                <div class="expense-modal-period-header">
+                    <h3 id="modalPeriodLabel">Expense Records</h3>
+                    <span id="modalMonthLabel" class="modal-month-label"></span>
+                </div>
+                <table class="expense-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Notes</th>
+                            <th>Amount</th>
+                            <th>Proof</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody"></tbody>
+                </table>
+                <div class="expense-modal-total-row">
+                    <span>Total</span>
+                    <span id="modalTotal">₱0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proof Photo Modal -->
+    <div class="modal-overlay" id="proofModal">
+        <div class="proof-modal-box">
+            <button class="modal-close-btn" id="closeProofModal">✕</button>
+            <img id="proofImage" src="" alt="Expense Proof" />
+        </div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/expenses.js"></script>
+</body>
+</html>

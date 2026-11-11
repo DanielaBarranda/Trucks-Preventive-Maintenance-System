@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/profile.css">
+</head>
+
+<body data-sidebar-page="">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <section class="page-header">
+            <div>
+                <h1 class="page-title">My Profile</h1>
+                <p class="page-subtitle">Manage your account information</p>
+            </div>
+        </section>
+
+        <!-- Profile Card -->
+        <div class="profile-layout">
+
+            <!-- Left: Avatar + Info -->
+            <div class="profile-card">
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar" id="profileAvatar">A</div>
+                </div>
+                <div class="profile-info">
+                    <h2 class="profile-name" id="profileName">—</h2>
+                    <span class="profile-role-badge" id="profileRole">—</span>
+                    <p class="profile-email" id="profileEmail">—</p>
+                </div>
+                <div class="profile-meta">
+                    <div class="profile-meta-item">
+                        <span class="profile-meta-label">User ID</span>
+                        <span class="profile-meta-value" id="profileId">—</span>
+                    </div>
+                    <div class="profile-meta-item">
+                        <span class="profile-meta-label">Role</span>
+                        <span class="profile-meta-value" id="profileRoleMeta">—</span>
+                    </div>
+                    <div class="profile-meta-item">
+                        <span class="profile-meta-label">Email</span>
+                        <span class="profile-meta-value" id="profileEmailMeta">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Edit Forms -->
+            <div class="profile-forms">
+
+                <!-- Edit Username -->
+                <div class="profile-form-card">
+                    <div class="profile-form-header">
+                        <h3>Edit Username</h3>
+                        <p>Update your display name</p>
+                    </div>
+                    <div class="profile-form-body">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="usernameInput" placeholder="Enter new username" />
+                        </div>
+                        <div class="form-feedback" id="usernameFeedback"></div>
+                        <button class="save-btn" id="saveUsernameBtn">Save Username</button>
+                    </div>
+                </div>
+
+                <!-- Change Password -->
+                <div class="profile-form-card">
+                    <div class="profile-form-header">
+                        <h3>Change Password</h3>
+                        <p>Keep your account secure</p>
+                    </div>
+                    <div class="profile-form-body">
+                        <div class="form-group">
+                            <label class="form-label">Current Password</label>
+                            <div class="input-password-wrap">
+                                <input type="password" class="form-input" id="currentPasswordInput" placeholder="Enter current password" />
+                                <button class="toggle-pw-btn" data-target="currentPasswordInput">👁</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <div class="input-password-wrap">
+                                <input type="password" class="form-input" id="newPasswordInput" placeholder="Enter new password" />
+                                <button class="toggle-pw-btn" data-target="newPasswordInput">👁</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <div class="input-password-wrap">
+                                <input type="password" class="form-input" id="confirmPasswordInput" placeholder="Confirm new password" />
+                                <button class="toggle-pw-btn" data-target="confirmPasswordInput">👁</button>
+                            </div>
+                        </div>
+                        <div class="form-feedback" id="passwordFeedback"></div>
+                        <button class="save-btn" id="savePasswordBtn">Change Password</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/profile.js"></script>
+</body>
+</html>

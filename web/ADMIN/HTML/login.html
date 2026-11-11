@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarQueen - Login</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Doppio+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/login.css">
+</head>
+<body>
+    <div class="login-container">
+        
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo-image">
+                <img src="/ADMIN/IMAGES/system-logo.png" alt="StarQueen Logo" />
+            </div>
+            <h1 class="system-name">STARQUEEN</h1>
+            <p class="tagline">Planned Maintenance and Tracking System</p>
+        </div>
+        
+        <!-- Login Form Section -->
+        <form class="login-form" id="loginForm" novalidate>
+            
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="Enter email here"
+                    autocomplete="email"
+                    required
+                    aria-required="true"
+                    aria-describedby="email-error"
+                />
+                <span class="error-message" id="email-error" role="alert"></span>
+            </div>
+            
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Enter password here"
+                    autocomplete="current-password"
+                    required
+                    aria-required="true"
+                    aria-describedby="password-error"
+                />
+                <span class="error-message" id="password-error" role="alert"></span>
+            </div>
+            
+            <!-- Forgot Password Link -->
+            <div class="forgot-password-container">
+                <a href="#" class="forgot-password-link">forgot password?</a>
+            </div>
+            
+            <!-- Login Button -->
+            <button type="submit" class="login-button">Login</button>
+        </form>
+        
+        <!-- Footer Section -->
+        <footer class="footer-text">
+            Centralized Truck Maintenance and Activity Monitoring
+        </footer>
+    </div>
+    
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/login.js"></script>
+</body>
+</html>

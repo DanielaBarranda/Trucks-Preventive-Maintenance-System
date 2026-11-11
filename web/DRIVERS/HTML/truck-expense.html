@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STARQUEEN PMTS - Truck Expense</title>
+  <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css" />
+  <link rel="stylesheet" href="/DRIVERS/CSS/truck-expense.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+
+<body data-sidebar-page="truck-expense">
+
+  <header class="mobile-header">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <h1>STARQUEEN PMTS</h1>
+  </header>
+
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header page-header--expense">
+      <div class="page-header-left">
+        <div class="page-header-meta">
+          <span class="page-header-label">PLATE NUMBER:</span>
+          <span class="page-header-plate" id="headerPlate">—</span>
+        </div>
+        <h1 class="page-header-title">Truck Expense</h1>
+      </div>
+    </div>
+
+    <!-- SP: Expense Analysis -->
+    <!-- SP_Expense_Analysis_with_Monthly_Filtering (filtered by this truck) -->
+    <div id="expenseAnalysisSection"></div>
+
+    <!-- Form Section -->
+    <section class="expense-section">
+      <div class="expense-form" id="expenseForm">
+
+        <div class="form-row form-row--two-col">
+          <div class="form-group">
+            <label class="form-label" for="expenseDate">Date <span class="required">*</span></label>
+            <input type="date" class="form-input" id="expenseDate" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="expenseCategory">Expense Category <span class="required">*</span></label>
+            <input type="text" class="form-input" id="expenseCategory" placeholder="e.g. fuel / change oil / wheel / etc." />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="expenseCost">Amount (₱) <span class="required">*</span></label>
+            <input type="number" class="form-input" id="expenseCost" placeholder="Enter amount" min="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="expenseNotes">Notes <span class="form-label-optional">(optional)</span></label>
+            <textarea class="form-input form-textarea" id="expenseNotes" placeholder="Add any additional notes here..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Photo Proof of Expense <span class="required">*</span></label>
+            <p class="form-sublabel">Upload both process and receipt photos to proceed.</p>
+            <div class="photo-section" id="photoSection">
+              <div class="photo-trigger" id="photoTrigger">
+                <div class="photo-icon-wrap">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <div class="photo-trigger-text">
+                  <p class="photo-label">Process &amp; Receipt photos required</p>
+                  <p class="photo-sublabel">PNG or JPG format</p>
+                </div>
+                <button type="button" class="upload-trigger-btn" id="openUploadModal">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                  Upload Photos
+                </button>
+              </div>
+              <div class="photo-chips" id="photoChips" style="display:none;">
+                <div class="chip chip-success" id="chipProcess">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span id="chipProcessName">Process Photo</span>
+                </div>
+                <div class="chip chip-success" id="chipReceipt">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span id="chipReceiptName">Receipt Photo</span>
+                </div>
+                <button type="button" class="reupload-btn" id="openUploadModal2">Change Photos</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+            Submit Expense
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div class="expense-modal-overlay" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="expense-modal-box">
+      <div class="expense-modal-header">
+        <h2 class="expense-modal-title" id="modalTitle">Upload Photos</h2>
+        <button class="expense-modal-close" onclick="closeModal()" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Required:</strong> Both photos must be uploaded to proceed.</span>
+      </div>
+      <div class="upload-block">
+        <p class="upload-block-label">1. Process Photo <span class="required">*</span></p>
+        <p class="upload-block-sub">Photo of the repair / replacement process</p>
+        <div class="upload-dropzone" id="processDropzone" onclick="triggerFileInput('processFileInput')">
+          <input type="file" id="processFileInput" accept="image/png,image/jpeg" hidden onchange="handleFileSelect('process', this)" />
+          <div class="dropzone-inner" id="processDropzoneInner">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            <p class="dropzone-text">Click to upload</p>
+            <p class="dropzone-hint">PNG, JPG — up to 5MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="upload-block">
+        <p class="upload-block-label">2. Receipt Photo <span class="required">*</span></p>
+        <p class="upload-block-sub">Photo of the official receipt</p>
+        <div class="upload-dropzone" id="receiptDropzone" onclick="triggerFileInput('receiptFileInput')">
+          <input type="file" id="receiptFileInput" accept="image/png,image/jpeg" hidden onchange="handleFileSelect('receipt', this)" />
+          <div class="dropzone-inner" id="receiptDropzoneInner">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            <p class="dropzone-text">Click to upload</p>
+            <p class="dropzone-hint">PNG, JPG — up to 10MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+        <button type="button" class="modal-submit-btn" id="modalSubmitBtn" onclick="submitPhotos()" disabled>Submit Photos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-box">
+      <div class="success-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 class="success-title">Expense Submitted!</h2>
+      <p class="success-msg">Your expense has been submitted. Maintenance status updated to Good.</p>
+      <button class="success-close-btn" onclick="resetForm()">Submit Another</button>
+    </div>
+  </div>
+
+  <script src="/ADMIN/JS/config.js"></script>
+    <script src="/DRIVERS/JS/session-fix.js"></script>  <!-- ADD THIS -->
+    <script src="/DRIVERS/JS/driver-sidebar.js"></script>
+    <script src="/DRIVERS/JS/truck-expense.js"></script>
+</body>
+</body>
+</html>

@@ -1,0 +1,324 @@
+/* ========================================
+   DRIVER DASHBOARD - driver-dashboard.css
+   Extends /ADMIN/CSS/admin-dashboard.css
+   ======================================== */
+
+/* ── Sidebar: logout button fix ───────── */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* ── Truck Plate Card ──────────────────── */
+.truck-plate-card {
+    background: linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #e8c547 60%, #c9a227 100%);
+    border-radius: 16px;
+    padding: 32px 40px;
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: 0 8px 32px rgba(201, 162, 39, 0.4), 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.truck-plate-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.truck-plate-card::after {
+    content: '';
+    position: absolute;
+    bottom: -50px; left: 30%;
+    width: 160px; height: 160px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.truck-plate-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 1;
+}
+
+.truck-plate-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.45);
+    margin-bottom: 2px;
+}
+
+.truck-plate-name {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1a1000;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.truck-plate-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.5);
+    margin-top: 4px;
+}
+
+.truck-plate-number::before {
+    content: '';
+    display: inline-block;
+    width: 20px; height: 2px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 2px;
+}
+
+.truck-plate-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    z-index: 1;
+    gap: 4px;
+}
+
+.truck-km-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.45);
+}
+
+.truck-km-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1a1000;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+}
+
+.truck-km-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0,0,0,0.45);
+}
+
+/* ── Quick Actions ──────────────────────── */
+.quick-actions { margin-bottom: var(--spacing-2xl); }
+
+/* ── Card icon colors ───────────────────── */
+.card-icon.truck-activity    { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.card-icon.truck-maintenance { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.card-icon.truck-expense     { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.card-icon.truck-odometer    { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+/* ── Alerts ─────────────────────────────── */
+.alerts-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.alert-item { border-left: 3px solid transparent; transition: all var(--transition-fast); }
+.alert-item.overdue-item { border-left-color: #c62828; }
+.alert-item.replace-item { border-left-color: #e65100; }
+.alert-item.warning-item { border-left-color: #f57c00; }
+
+/* ── Status badges ──────────────────────── */
+.badge.overdue  { background-color: #ffebee; color: #c62828; }
+.badge.replace  { background-color: #fff3e0; color: #e65100; }
+.badge.warning  { background-color: #fff9c4; color: #f57c00; }
+.badge.good     { background-color: #e8f5e9; color: #2e7d32; }
+
+.alert-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+}
+
+/* ── View All link ──────────────────────── */
+.view-all {
+    text-align: right;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border-light);
+    margin-top: var(--spacing-sm);
+}
+
+.view-all-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-accent);
+    transition: color var(--transition-fast);
+}
+
+.view-all-link:hover { color: var(--color-primary); text-decoration: underline; }
+
+/* ── Driver SP Sections ─────────────────── */
+.driver-sp-section {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.driver-sp-section--urgent {
+    border-color: #fca5a5;
+    background: #fff5f5;
+}
+
+.driver-sp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
+}
+
+.driver-sp-header svg { color: var(--color-primary); }
+
+.driver-sp-header h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.driver-sp-empty {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* Ack Rate */
+.driver-ack-row    { display: flex; flex-direction: column; gap: 8px; }
+.driver-ack-counts { display: flex; gap: 12px; font-size: 13px; font-weight: 600; }
+.driver-ack-read   { color: #16a34a; }
+.driver-ack-unread { color: #dc2626; }
+.driver-ack-total  { color: var(--color-text-secondary); }
+
+.driver-ack-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.driver-ack-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.driver-ack-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+}
+
+.driver-ack-rate {
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Unread Notifs */
+.driver-unread-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.driver-unread-count { font-size: 28px; font-weight: 800; color: #dc2626; line-height: 1; }
+.driver-unread-label { font-size: 14px; font-weight: 500; color: #7f1d1d; flex: 1; }
+.driver-unread-link  { font-size: 13px; font-weight: 700; color: var(--color-primary); text-decoration: none; }
+.driver-unread-link:hover { text-decoration: underline; }
+
+/* ── First & Last Trip Summary ──────────── */
+.driver-trip-summary {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.driver-trip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
+}
+
+.driver-trip-header svg { color: var(--color-primary); }
+
+.driver-trip-header h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.driver-trip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.driver-trip-card {
+    background: #f9fafb;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.driver-trip-card.first { border-top: 3px solid #3b82f6; }
+.driver-trip-card.last  { border-top: 3px solid #10b981; }
+.driver-trip-card.total { border-top: 3px solid var(--color-primary); }
+
+.driver-trip-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.driver-trip-date  { font-size: 13px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 4px; }
+.driver-trip-farm  { font-size: 12px; color: var(--color-text-secondary); }
+.driver-trip-count { font-size: 32px; font-weight: 800; color: var(--color-primary); line-height: 1; }
+
+/* ── Mobile ─────────────────────────────── */
+@media (max-width: 768px) {
+    .truck-plate-card { flex-direction: column; align-items: flex-start; padding: 24px; gap: 20px; }
+    .truck-plate-right { align-items: flex-start; text-align: left; }
+    .truck-plate-name  { font-size: 28px; }
+    .truck-km-value    { font-size: 26px; }
+    .driver-trip-grid  { grid-template-columns: 1fr; }
+    .alert-status { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
+}

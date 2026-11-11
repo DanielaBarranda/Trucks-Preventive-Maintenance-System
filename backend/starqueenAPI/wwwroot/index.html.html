@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarQueen PMTS</title>
+    <script src="/ADMIN/JS/config.js"></script>
+    <script>
+        // Already logged in → go to correct dashboard
+        // Not logged in → go to login page
+        if (SessionManager.isValid()) {
+            const role = SessionManager.get('role');
+            if (role === 'Admin') {
+                window.location.replace('/ADMIN/HTML/admin-dashboard.html');
+            } else if (role === 'Driver') {
+                window.location.replace('/DRIVERS/HTML/driver-dashboard.html');
+            } else {
+                window.location.replace('/ADMIN/HTML/login.html');
+            }
+        } else {
+            SessionManager.clear();
+            window.location.replace('/ADMIN/HTML/login.html');
+        }
+    </script>
+</head>
+<body></body>
+</html>

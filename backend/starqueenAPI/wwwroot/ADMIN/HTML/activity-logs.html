@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Activity Logs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/activity-logs.css">
+</head>
+
+<body data-sidebar-page="active-trucks">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Activity Logs</h1>
+            <p class="page-subtitle">Fleet activity overview, driver performance, and trip history</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards-grid" id="summaryCards"></div>
+
+        <!-- Driver Performance Table -->
+        <div id="driverPerformanceTable"></div>
+
+        <!-- First & Last Trip Table -->
+        <div id="tripSummaryTable"></div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+
+            <div class="search-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <input type="text" class="search-input" id="searchInput"
+                       placeholder="Search by truck, driver or location..." />
+            </div>
+
+            <div class="filter-wrapper">
+                <svg class="filter-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M3 5h14M6 10h8M9 15h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <select class="filter-select" id="truckModelFilter">
+                    <option value="">All Trucks</option>
+                    <option value="ELF">ELF Trucks</option>
+                    <option value="FWD">FWD Trucks</option>
+                    <option value="TW">TW Trucks</option>
+                    <option value="10W">10W Trucks</option>
+                    <option value="Wing Van">Wing Van</option>
+                </select>
+            </div>
+
+            <div class="filter-wrapper" style="min-width:150px;">
+                <svg class="filter-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M3 8h14M7 4V2M13 4V2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <select class="filter-select" id="monthFilter" style="padding-left:40px;">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+
+            <div class="filter-wrapper" style="min-width:130px;">
+                <svg class="filter-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M10 6v4l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <select class="filter-select" id="yearFilter" style="padding-left:40px;">
+                    <option value="">All Years</option>
+                </select>
+            </div>
+
+            <button class="clear-filters-btn" id="clearFilters">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Clear
+            </button>
+
+        </div>
+
+        <!-- Active filter indicator -->
+        <div class="filter-active-bar" id="filterActiveBar" style="display:none;">
+            <span id="filterActiveText"></span>
+        </div>
+
+        <!-- Activity History Table -->
+        <div class="activity-table-card">
+            <div class="table-header">
+                <h2 class="table-title">Activity History</h2>
+                <span class="count-badge" id="activityCount">0</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>Truck Plate</th>
+                            <th>Driver</th>
+                            <th>Date</th>
+                            <th>Farm</th>
+                            <th>Address</th>
+                            <th>Call Time</th>
+                            <th>Plant</th>
+                            <!-- Departure split into Date + Time -->
+                            <th>Dep. Date</th>
+                            <th>Dep. Time</th>
+                            <!-- Arrival split into Date + Time -->
+                            <th>Arr. Date</th>
+                            <th>Arr. Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody"></tbody>
+                </table>
+
+                <div class="empty-state hidden" id="emptyState">
+                    <div class="empty-icon">
+                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="8" width="28" height="32" rx="3" stroke="currentColor" stroke-width="2"/>
+                            <path d="M16 18h16M16 24h16M16 30h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <p class="empty-title">No activity logs found</p>
+                    <p class="empty-subtitle">Try adjusting your filters or search term</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/activity-logs.js"></script>
+</body>
+</html>

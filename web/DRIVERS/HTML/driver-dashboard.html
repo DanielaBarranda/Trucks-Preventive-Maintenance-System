@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Driver Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/DRIVERS/CSS/driver-dashboard.css">
+</head>
+
+<body data-sidebar-page="driver-dashboard">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Truck Plate Card -->
+        <div class="truck-plate-card">
+            <div class="truck-plate-left">
+                <p class="truck-plate-label">TRUCK PLATE NUMBER</p>
+                <h1 class="truck-plate-name" id="truckPlateName">—</h1>
+                <p class="truck-plate-number" id="truckPlateNumber">—</p>
+            </div>
+            <div class="truck-plate-right">
+                <p class="truck-km-label">CURRENT ODOMETER</p>
+                <p class="truck-km-value" id="dashboardKm">— KM</p>
+                <p class="truck-km-date" id="dashboardKmDate"></p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <div class="actions-grid">
+
+                <div class="action-card" onclick="window.location.href='/DRIVERS/HTML/truck-activity.html'" style="cursor:pointer;">
+                    <div class="card-icon truck-activity">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <rect x="2" y="6" width="24" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M7 14l4 4 10-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3>Truck Activity</h3>
+                        <p class="card-value" id="countActivity">00</p>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/DRIVERS/HTML/maintenance-log.html'" style="cursor:pointer;">
+                    <div class="card-icon truck-maintenance">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <circle cx="14" cy="14" r="11" stroke="currentColor" stroke-width="2"/>
+                            <path d="M14 9v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3>Truck Maintenance Logs</h3>
+                        <p class="card-value" id="countMaintenance">00</p>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/DRIVERS/HTML/truck-expense.html'" style="cursor:pointer;">
+                    <div class="card-icon truck-expense">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <rect x="3" y="6" width="22" height="17" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <path d="M3 11h22M9 6V4M19 6V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3>Truck Expense</h3>
+                        <p class="card-value" id="countExpense">00</p>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/DRIVERS/HTML/truck-odometer.html'" style="cursor:pointer;">
+                    <div class="card-icon truck-odometer">
+                        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <path d="M5 18a9 9 0 1118 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M14 18l-3-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="14" cy="18" r="1.5" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3>Truck Odometer</h3>
+                        <p class="card-value" id="countOdometer">00</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Content Grid (Alerts + Disclaimer) -->
+        <section class="content-grid">
+            <div class="maintenance-alerts">
+                <div class="alerts-header">
+                    <h2>Maintenance Alerts Overview</h2>
+                </div>
+                <!-- SP_Maintenance_Monitoring_Alert_Detection (filtered by truck) -->
+                <div class="alerts-list" id="alertsList">
+                    <div class="empty-state">
+                        <p>No maintenance alerts at this time</p>
+                    </div>
+                </div>
+                <div class="view-all" id="viewAllContainer" style="display:none;">
+                    <a href="/DRIVERS/HTML/maintenance-log.html" class="view-all-link">View All</a>
+                </div>
+            </div>
+
+            <div class="disclaimer-box">
+                <h3>Disclaimer:</h3>
+                <p class="disclaimer-intro">Indicators guide the condition of parts based on typical intervals:</p>
+                <ul class="disclaimer-list">
+                    <li><strong>Good</strong> - Part is still within safe Typical Interval.</li>
+                    <li><strong>Warning</strong> - Approaching end of Typical Interval.</li>
+                    <li><strong>Replace</strong> - Typical Interval reached; part needs replacement.</li>
+                    <li><strong>Overdue</strong> - Past the Typical Interval; immediate attention or replacement required.</li>
+                </ul>
+                <p class="disclaimer-note"><strong>Note:</strong> Actual conditions may vary and should be verified during physical inspection.</p>
+            </div>
+        </section>
+
+        <!-- SP: Unread Maintenance Notifications Per Truck -->
+        <!-- SP_Unread_Maintenance_Notifications_Per_Truck -->
+        <div id="unreadNotifsSection"></div>
+
+        <!-- SP: Notification Acknowledgement Rate -->
+        <!-- SP_Notification_Acknowledgement_Rate -->
+        <div id="ackRateSection"></div>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/DRIVERS/JS/session-fix.js"></script>  <!-- ADD THIS -->
+    <script src="/DRIVERS/JS/driver-sidebar.js"></script>
+    <script src="/DRIVERS/JS/driver-dashboard.js"></script>
+</body>
+</body>
+</html>

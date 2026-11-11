@@ -1,0 +1,530 @@
+/* ========================================
+   EXPENSES PAGE
+   ======================================== */
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+}
+
+.page-subtitle {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+}
+
+/* ── Total Card ─────────────────────────── */
+.total-card {
+    background: var(--color-primary);
+    border-radius: 16px;
+    padding: var(--spacing-xl) var(--spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.total-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.total-amount {
+    font-size: 40px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.total-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+}
+
+.total-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.total-period {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+}
+
+.period-select {
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+}
+
+.period-select option { color: #1a1a2e; background: #fff; }
+
+.month-year-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ── Controls ───────────────────────────── */
+.controls-section {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 16px 0 40px;
+    border-radius: 10px;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-card);
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--color-text-primary);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color var(--transition-fast);
+}
+
+.search-input:focus { border-color: var(--color-primary); }
+
+.filters-wrapper {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    height: 42px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-card);
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    outline: none;
+}
+
+/* ── Truck Groups ───────────────────────── */
+.trucks-section { display: flex; flex-direction: column; gap: var(--spacing-xl); }
+
+.truck-group { display: flex; flex-direction: column; gap: var(--spacing-md); }
+
+.truck-group-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-secondary);
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--color-border-light);
+}
+
+.truck-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+}
+
+/* ── Expense Card ───────────────────────── */
+.expense-card {
+    background: var(--color-bg-card);
+    border-radius: 12px;
+    border: 1.5px solid var(--color-border-light);
+    overflow: hidden;
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.expense-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border);
+}
+
+.expense-card .truck-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    gap: var(--spacing-md);
+}
+
+.truck-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 2px;
+}
+
+.truck-meta {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.expense-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.expense-total {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.expense-total.no-data {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.expense-count {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+}
+
+.view-details-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.view-details-btn:hover { background: #162d6b; }
+
+/* ── Empty State ────────────────────────── */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding: 60px;
+    color: var(--color-text-secondary);
+    font-size: 15px;
+}
+
+/* ── Expense Modal ──────────────────────── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-speed);
+    padding: var(--spacing-lg);
+    box-sizing: border-box;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.expense-modal-box {
+    background: var(--color-bg-card);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-20px);
+    transition: transform var(--transition-speed);
+    overflow: hidden;
+}
+
+.modal-overlay.active .expense-modal-box {
+    transform: translateY(0);
+}
+
+.expense-modal-header {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.expense-modal-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.expense-modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.modal-km-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+}
+
+.modal-date-text {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+}
+
+.modal-tx-count {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.15);
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.modal-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.modal-close-btn:hover { background: rgba(255,255,255,0.3); }
+
+.expense-modal-body { overflow-y: auto; flex: 1; }
+
+.expense-modal-period-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.expense-modal-period-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.modal-month-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: rgba(26,58,141,0.08);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* Expense Table */
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-table thead th {
+    padding: 10px var(--spacing-xl);
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--color-border);
+    background: var(--color-bg-page);
+}
+
+.expense-row {
+    border-bottom: 1px solid var(--color-border-light);
+    transition: background var(--transition-fast);
+}
+
+.expense-row:hover { background: var(--color-bg-page); }
+.expense-row:last-child { border-bottom: none; }
+
+.expense-row td {
+    padding: 12px var(--spacing-xl);
+    font-size: 14px;
+    color: var(--color-text-primary);
+}
+
+.notes-cell {
+    color: var(--color-text-secondary) !important;
+    font-size: 13px !important;
+    max-width: 180px;
+}
+
+.amount-cell {
+    font-weight: 600 !important;
+    color: var(--color-primary) !important;
+}
+
+.proof-btn {
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 6px;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all var(--transition-fast);
+}
+
+.proof-btn:hover { background: #162d6b; }
+
+.no-proof { color: var(--color-text-secondary); }
+
+.expense-modal-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-top: 2px solid var(--color-border);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--color-primary);
+    background: var(--color-bg-page);
+}
+
+/* ── Proof Photo Modal ──────────────────── */
+.proof-modal-box {
+    position: relative;
+    background: #1a1a2e;
+    border-radius: 12px;
+    overflow-y: auto;
+    width: 620px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column; 
+    transform: translateY(-20px);
+    transition: transform var(--transition-speed);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+.modal-overlay.active .proof-modal-box {
+    transform: translateY(0);
+}
+
+.proof-modal-box img {
+    max-width: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── ADD TO BOTTOM OF expenses.css ─────────────────── */
+
+/* Trucks Section Scrollable — prevents page from stretching */
+.trucks-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    max-height: 520px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+}
+
+.trucks-section::-webkit-scrollbar       { width: 5px; }
+.trucks-section::-webkit-scrollbar-track { background: transparent; }
+.trucks-section::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+.trucks-section::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Hide SP badges per design decision */
+.sp-badge { display: none; }
+
+/* Fade in */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* Footer */
+.footer { margin-top: auto; padding-top: var(--spacing-xl); }
+.footer-divider { height: 1px; background: var(--color-border-light); margin-bottom: var(--spacing-lg); }
+.footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); }
+.footer-copyright { font-size: 13px; color: var(--color-text-secondary); }
+.footer-links { display: flex; gap: var(--spacing-lg); }
+.footer-links a { font-size: 13px; color: var(--color-text-secondary); text-decoration: none; }
+.footer-links a:hover { color: var(--color-primary); }
+
+@media (max-width: 768px) {
+    .total-card { flex-direction: column; align-items: flex-start; }
+    .total-card-right { align-items: flex-start; }
+    .expense-modal-box { max-width: 100%; border-radius: 12px 12px 0 0; max-height: 90vh; }
+    .modal-overlay { align-items: flex-end; }
+    .proof-modal-box { width: 100%; border-radius: 12px 12px 0 0; }
+}

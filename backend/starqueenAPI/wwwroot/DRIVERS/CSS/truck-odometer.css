@@ -1,0 +1,419 @@
+/* ============================================================
+   TRUCK ODOMETER — truck-odometer.css
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+:root {
+  --odo-navy:        #1B2A6B;
+  --odo-navy-light:  #253580;
+  --odo-white:       #FFFFFF;
+  --odo-bg:          #F4F5F8;
+  --odo-card:        #FFFFFF;
+  --odo-border:      #E2E4EA;
+  --odo-input-bg:    #F0F1F5;
+  --odo-text:        #1A1D2E;
+  --odo-muted:       #6B7080;
+  --odo-required:    #CC2222;
+  --odo-key-bg:      #FFFFFF;
+  --odo-key-border:  #D8DAE5;
+  --odo-key-hover:   #F0F2FA;
+  --odo-key-active:  #E4E8F5;
+  --odo-notice-bg:   #FFFBEB;
+  --odo-notice-bdr:  #E8CC6B;
+  --odo-notice-txt:  #5A4500;
+  --odo-success:     #1A6B3C;
+  --odo-success-bg:  #EBF7EF;
+  --font-main:       'Instrument Sans', sans-serif;
+  --font-cond:       'Barlow Condensed', sans-serif;
+  --radius-sm:       8px;
+  --radius-md:       12px;
+  --radius-lg:       16px;
+  --radius-pill:     100px;
+  --shadow-card:     0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.06);
+  --transition:      0.15s ease;
+}
+
+body { font-family: var(--font-main); background: var(--odo-bg); }
+
+
+/* ── KM Mode inner content — centered keypad ── */
+.odo-km-inner {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Page Header ──────────────────────────────────────────── */
+.odo-page-header {
+  background: var(--odo-navy);
+  border-radius: var(--radius-md);
+  padding: 22px 32px 24px;
+  margin-bottom: 24px;
+}
+.odo-header-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.odo-plate-label { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.60); letter-spacing: 0.1em; text-transform: uppercase; }
+.odo-plate-value { font-family: var(--font-cond); font-size: 1rem; font-weight: 700; color: var(--odo-white); letter-spacing: 0.06em; }
+.odo-page-title  { font-family: var(--font-cond); font-size: 2.4rem; font-weight: 800; color: var(--odo-white); letter-spacing: 0.02em; line-height: 1; }
+
+/* ── Tracking Type Toggle ─────────────────────────────────── */
+.odo-toggle-wrapper {
+    display: flex;
+    gap: 10px;
+    max-width: 100%;
+    margin: 0 0 20px;
+}
+.odo-toggle-btn {
+    flex: 1;
+    height: 46px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--odo-border);
+    background: var(--odo-white);
+    font-family: var(--font-main);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--odo-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all var(--transition);
+}
+.odo-toggle-btn:hover { border-color: var(--odo-navy); color: var(--odo-navy); background: #f0f2fa; }
+.odo-toggle-btn.active { background: var(--odo-navy); border-color: var(--odo-navy); color: var(--odo-white); }
+.odo-toggle-btn.active svg { stroke: var(--odo-white); }
+
+/* ── Odometer Card ───────────────────────────────────────── */
+.odo-card {
+  background: var(--odo-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 28px 32px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* KM mode card — centered, compact (overrides base) */
+.odo-card--km {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Month mode card — full width, no scroll */
+.odo-card--month {
+  max-width: 100%;
+  margin: 0;
+}
+
+/* ── Notice ──────────────────────────────────────────────── */
+.odo-notice {
+  background: var(--odo-notice-bg);
+  border: 1px solid var(--odo-notice-bdr);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--odo-notice-txt);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+.odo-notice svg { flex-shrink: 0; margin-top: 1px; color: #B8860B; }
+.odo-notice strong { font-weight: 700; }
+
+/* ── Input Display ───────────────────────────────────────── */
+.odo-input-group { margin-bottom: 20px; }
+.odo-input-label { display: block; font-size: 0.84rem; font-weight: 700; color: var(--odo-text); margin-bottom: 8px; letter-spacing: 0.01em; }
+.odo-required { color: var(--odo-required); margin-left: 2px; }
+
+.odo-display {
+  background: var(--odo-input-bg);
+  border: 1.5px solid var(--odo-border);
+  border-radius: var(--radius-sm);
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  transition: border-color var(--transition);
+}
+.odo-display.has-value { border-color: var(--odo-navy); background: var(--odo-white); }
+.odo-display-value { font-family: var(--font-cond); font-size: 1.7rem; font-weight: 700; color: var(--odo-text); letter-spacing: 0.04em; line-height: 1; }
+.odo-display-value.placeholder { color: #BABCC8; font-size: 1rem; font-weight: 400; font-family: var(--font-main); }
+.odo-display-unit { font-family: var(--font-main); font-size: 0.78rem; font-weight: 700; color: var(--odo-muted); letter-spacing: 0.08em; text-transform: uppercase; align-self: flex-end; padding-bottom: 10px; }
+
+/* ── Keypad ──────────────────────────────────────────────── */
+.odo-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.odo-key {
+  height: 56px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--odo-key-border);
+  background: var(--odo-key-bg);
+  font-family: var(--font-main);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--odo-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: background var(--transition), transform 0.08s ease, box-shadow var(--transition);
+  user-select: none;
+}
+.odo-key:hover  { background: var(--odo-key-hover); box-shadow: 0 3px 8px rgba(0,0,0,0.09); }
+.odo-key:active { background: var(--odo-key-active); transform: scale(0.96); box-shadow: none; }
+.odo-clear { color: var(--odo-required); border-color: #F0C0C0; background: #FFF5F5; }
+.odo-clear:hover { background: #FFE8E8; }
+.odo-back { color: var(--odo-navy); border-color: #C8CEED; background: #F0F2FA; }
+.odo-back:hover { background: #E4E8F5; }
+
+/* ── Month Mode Form ─────────────────────────────────────── */
+.odo-month-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; }
+
+.odo-select {
+    width: 100%;
+    height: 52px;
+    padding: 0 40px 0 16px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--odo-border);
+    background: var(--odo-input-bg);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--odo-text);
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7080' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+.odo-select:focus { border-color: var(--odo-navy); background-color: var(--odo-white); }
+
+.odo-month-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--odo-success-bg);
+    border: 1px solid #b7e4c7;
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--odo-success);
+}
+.odo-month-summary svg { flex-shrink: 0; stroke: var(--odo-success); }
+
+/* ── Action Buttons ──────────────────────────────────────── */
+.odo-actions { display: flex; gap: 12px; }
+.odo-btn-cancel {
+  flex: 1; height: 48px; border-radius: var(--radius-md);
+  border: 1.5px solid var(--odo-border); background: var(--odo-white);
+  font-family: var(--font-main); font-size: 0.9rem; font-weight: 600;
+  color: var(--odo-muted); cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+.odo-btn-cancel:hover { border-color: #999; background: var(--odo-bg); color: var(--odo-text); }
+.odo-btn-submit {
+  flex: 2; height: 48px; border-radius: var(--radius-md); border: none;
+  background: var(--odo-navy); font-family: var(--font-cond); font-size: 1rem;
+  font-weight: 700; letter-spacing: 0.07em; color: var(--odo-white);
+  cursor: pointer; transition: background var(--transition), transform 0.08s ease;
+}
+.odo-btn-submit:hover  { background: var(--odo-navy-light); }
+.odo-btn-submit:active { transform: scale(0.98); }
+.odo-btn-submit:disabled { background: #9AA0BC; cursor: not-allowed; }
+
+
+
+/* ── Notice Variants ─────────────────────────────────────── */
+.odo-notice--blue {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+.odo-notice--blue svg { color: #3b82f6; }
+
+.odo-notice--warning {
+  background: var(--odo-notice-bg);
+  border-color: var(--odo-notice-bdr);
+  color: var(--odo-notice-txt);
+}
+.odo-notice--warning svg { color: #B8860B; }
+
+/* ── Component List improved ─────────────────────────────── */
+.odo-component-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--odo-muted);
+  margin-bottom: 10px;
+  padding: 8px 14px;
+  background: var(--odo-input-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--odo-border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.odo-component-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.odo-component-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  border: 1.5px solid var(--odo-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.odo-component-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.odo-component-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--odo-text);
+  margin-bottom: 2px;
+}
+
+.odo-component-meta {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--odo-muted);
+}
+
+/* ── Locked row ─────────────────────────────────────────── */
+.odo-component-row--locked {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.odo-component-row--locked .odo-component-name {
+  color: #6b7280;
+}
+
+.odo-component-lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.odo-component-lock svg { stroke: #9ca3af; }
+
+/* ── Open/unlocked row ──────────────────────────────────── */
+.odo-component-row--open {
+  background: var(--odo-white);
+  border-color: var(--odo-navy);
+  box-shadow: 0 0 0 3px rgba(27,42,107,0.06);
+}
+
+.odo-component-row--open .odo-component-name {
+  color: var(--odo-navy);
+}
+
+.odo-component-row--open .odo-component-meta {
+  color: #6b7280;
+}
+
+/* ── Component inputs ───────────────────────────────────── */
+.odo-component-inputs {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.odo-select-sm {
+  height: 38px;
+  min-width: 110px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .odo-card--month { padding: 20px 16px 24px; }
+  .odo-component-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .odo-component-inputs { width: 100%; }
+  .odo-select-sm { flex: 1; min-width: 0; }
+  .odo-component-lock { width: 100%; justify-content: center; }
+}
+
+/* ── (old component styles replaced above) ── */
+.odo-component-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.odo-component-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--odo-input-bg);
+    border: 1.5px solid var(--odo-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    transition: border-color var(--transition);
+}
+
+.odo-component-row:hover { border-color: var(--odo-navy); }
+
+.odo-component-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--odo-text);
+    flex: 1;
+    min-width: 0;
+}
+
+.odo-component-inputs {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.odo-select-sm {
+    height: 38px;
+    min-width: 100px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+@media (max-width: 480px) {
+    .odo-component-row { flex-direction: column; align-items: flex-start; }
+    .odo-component-inputs { width: 100%; }
+    .odo-select-sm { flex: 1; min-width: 0; }
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .odo-card         { padding: 20px 18px 24px; max-width: 100%; }
+  .odo-page-header  { padding: 18px 20px 20px; }
+  .odo-page-title   { font-size: 2rem; }
+  .odo-key          { height: 52px; font-size: 1rem; }
+  .odo-keypad       { gap: 8px; }
+  .odo-toggle-wrapper { max-width: 100%; }
+  .odo-toggle-btn   { font-size: 0.82rem; }
+}

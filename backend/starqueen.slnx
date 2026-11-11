@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="starqueen/starqueen.csproj" />
+  <Project Path="starqueenAPI/starqueenAPI.csproj" Id="0746da1e-7663-4f4d-9954-809477adcd55" />
+</Solution>

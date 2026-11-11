@@ -1,0 +1,6 @@
+@starqueenAPI_HostAddress = http://localhost:5247
+
+GET {{starqueenAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

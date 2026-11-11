@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Truck Activity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/DRIVERS/CSS/truck-activity.css">
+</head>
+
+<body data-sidebar-page="truck-activity">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-meta">
+                <span class="page-header-label">PLATE NUMBER:</span>
+                <span class="page-header-plate" id="headerPlate">—</span>
+            </div>
+            <h1 class="page-header-title">Truck Activity</h1>
+        </div>
+
+        <!-- SP: First & Last Trip Summary -->
+        <!-- SP_Monitoring_The_First_And_Last_Trip_Of_A_Truck -->
+        <div id="firstLastTripSection"></div>
+
+        <!-- SP: Driver Performance Summary -->
+        <!-- SP_Driver_Performance_Activity_Summary -->
+        <div id="driverPerformanceSection"></div>
+
+        <!-- Log New Activity -->
+        <section class="form-section">
+            <div class="form-section-header">
+                <h2 class="form-section-title">Log New Activity</h2>
+                <p class="form-section-subtitle">Please enter the following details</p>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="inputDate">Date <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="inputDate">
+                    <span class="field-error" id="errorDate"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputCallTime">Call Time <span class="required">*</span></label>
+                    <input type="time" class="form-input" id="inputCallTime">
+                    <span class="field-error" id="errorCallTime"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputFarm">Farm <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="inputFarm" placeholder="e.g. Farm A">
+                    <span class="field-error" id="errorFarm"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="inputPlant">Plant</label>
+                    <input type="text" class="form-input" id="inputPlant" placeholder="e.g. Plant 1">
+                </div>
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="inputAddress">Address <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="inputAddress" placeholder="e.g. Brgy. San Jose, Batangas">
+                    <span class="field-error" id="errorAddress"></span>
+                </div>
+                <div class="form-group form-group-full">
+                    <label class="form-label" for="inputDriverName">Driver's Name <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="inputDriverName" placeholder="Full name">
+                    <span class="field-error" id="errorDriverName"></span>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" id="submitActivityBtn">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Submit Activity
+                </button>
+            </div>
+        </section>
+
+        <!-- Pending -->
+        <section class="activities-section">
+            <div class="activities-header">
+                <h2 class="section-title">Pending</h2>
+                <span class="activities-count" id="pendingCount">0 records</span>
+            </div>
+            <div class="activities-list" id="pendingList">
+                <div class="empty-state"><p>No pending activities</p></div>
+            </div>
+        </section>
+
+        <!-- My Activities with Month Filter -->
+        <section class="activities-section">
+            <div class="activities-header">
+                <h2 class="section-title">My Activities</h2>
+                <div class="activities-header-right">
+                    <select class="activity-filter-select" id="monthFilter">
+                        <option value="all">All Months</option>
+                    </select>
+                    <span class="activities-count" id="activitiesCount">0 records</span>
+                </div>
+            </div>
+            <div class="activities-list scrollable" id="activitiesList">
+                <div class="empty-state"><p>No completed activities yet</p></div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+    <div class="toast" id="toast"></div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/DRIVERS/JS/session-fix.js"></script>  <!-- ADD THIS -->
+    <script src="/DRIVERS/JS/driver-sidebar.js"></script>
+    <script src="/DRIVERS/JS/truck-activity.js"></script>
+</body>
+</body>
+</html>

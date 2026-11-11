@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Truck Maintenance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/DRIVERS/CSS/maintenance-log.css">
+</head>
+
+<body class="maintenance-log-page" data-sidebar-page="truck-maintenance">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header page-header--maintenance">
+            <div class="page-header-left">
+                <div class="page-header-meta">
+                    <span class="page-header-label">PLATE NUMBER:</span>
+                    <span class="page-header-plate" id="headerPlate">—</span>
+                </div>
+                <h1 class="page-header-title">Truck Maintenance</h1>
+            </div>
+            <div class="page-header-odometer" id="headerOdometerBlock">
+                <span class="page-header-km" id="headerKm">—</span>
+                <span class="page-header-km-date" id="headerKmDate"></span>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="maintenance-tabs">
+            <button class="maintenance-tab active" data-tab="current">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Current Status
+            </button>
+            <button class="maintenance-tab" data-tab="history">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M2 8a6 6 0 1 0 12 0A6 6 0 0 0 2 8" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                History
+            </button>
+        </div>
+
+        <!-- Current Status Tab -->
+        <div class="tab-panel" id="tabCurrent">
+
+            <!-- SP: Maintenance Alert Detection -->
+            <!-- SP_Maintenance_Monitoring_Alert_Detection (filtered by this truck) -->
+            <div id="alertDetectionSection"></div>
+
+            <section class="maintenance-card">
+                <h2 class="maintenance-card-title">
+                    All Maintenance Records (<span id="recordCount">0</span>)
+                </h2>
+                <div class="maintenance-table" role="table" aria-label="Maintenance records">
+                    <div class="maintenance-table-head" role="row">
+                        <div class="maintenance-th maintenance-th-type" role="columnheader">Maintenance Type</div>
+                        <div class="maintenance-th maintenance-th-status" role="columnheader">Status</div>
+                    </div>
+                    <div class="maintenance-table-body" id="maintenanceRows"></div>
+                </div>
+                <div class="maintenance-empty" id="maintenanceEmpty" hidden>
+                    <p>No maintenance reference data for this truck type, or no truck is assigned.</p>
+                </div>
+            </section>
+
+            <div class="maintenance-notice" role="note">
+                <p><strong>Important:</strong> Please take photos of the process and the receipt. These are required as proof and must be uploaded together with the other expense details to the Truck Expense section.</p>
+            </div>
+
+        </div>
+
+        <!-- History Tab -->
+        <div class="tab-panel" id="tabHistory" hidden>
+            <section class="maintenance-card">
+                <h2 class="maintenance-card-title">
+                    Resolved Maintenance History (<span id="historyCount">0</span>)
+                </h2>
+                <div id="historyList"></div>
+                <div class="maintenance-empty" id="historyEmpty" hidden>
+                    <p>No resolved maintenance history yet.</p>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+    <div class="toast" id="toast"></div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/DRIVERS/JS/session-fix.js"></script>  <!-- ADD THIS -->
+    <script src="/DRIVERS/JS/driver-sidebar.js"></script>
+    <script src="/DRIVERS/JS/maintenance-log.js"></script>
+</body>
+</body>
+</html>

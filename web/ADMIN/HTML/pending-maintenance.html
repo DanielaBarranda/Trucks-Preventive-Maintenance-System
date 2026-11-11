@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Pending Maintenance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/pending-maintenance.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/sp-sections.css">
+</head>
+
+<body data-sidebar-page="pending-maintenance">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="page-header-left">
+                <h1 class="page-title">Pending Maintenance</h1>
+                <p class="page-subtitle">Track and manage all truck maintenance activities</p>
+            </div>
+            <div class="page-header-right">
+                <div class="summary-badges">
+                    <span class="summary-badge warning" id="badgeWarning">Warning: 00</span>
+                    <span class="summary-badge replace" id="badgeReplace">Replace: 00</span>
+                    <span class="summary-badge overdue" id="badgeOverdue">Overdue: 00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabs -->
+        <div class="maintenance-page-tabs">
+            <button class="maintenance-page-tab active" data-tab="pending">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 5v3.5l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Pending
+            </button>
+            <button class="maintenance-page-tab" data-tab="history">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M2 8a6 6 0 1 0 12 0A6 6 0 0 0 2 8" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                History
+            </button>
+        </div>
+
+        <!-- ═══ PENDING TAB ═══ -->
+        <div id="tabPending">
+
+            <!-- SP: Near Replacement (populated by JS) -->
+            <div id="nearReplacementSection"></div>
+
+            <!-- SP: Oldest Components (populated by JS) -->
+            <div id="oldestComponentsSection"></div>
+
+            <!-- SP: Maintenance Alert Detection (populated by JS) -->
+            <div id="maintenanceAlertsSection"></div>
+
+            <!-- SP: Components Overdue for Replacement (populated by JS) -->
+            <div id="overdueReplacementSection"></div>
+
+            <!-- Good Status + Total Components → moved to Dashboard -->
+
+            <!-- Controls -->
+            <section class="controls-section" style="margin-top:24px;">
+                <div class="search-wrapper">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <circle cx="7.5" cy="7.5" r="5.5" stroke="#888" stroke-width="1.5"/>
+                        <path d="M12.5 12.5L16 16" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <input type="text" id="searchInput" class="search-input"
+                           placeholder="Search truck name or plate..." />
+                </div>
+                <div class="filters-wrapper">
+                    <select id="typeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="ELF">ELF Trucks</option>
+                        <option value="FWD">FWD Trucks</option>
+                        <option value="TW">TW Trucks</option>
+                        <option value="10W">10W Trucks</option>
+                        <option value="WING_VAN">Wing Van Trucks</option>
+                    </select>
+                    <div class="status-filters" id="statusFilters">
+                        <button class="status-filter-btn active" data-status="all">All</button>
+                        <button class="status-filter-btn" data-status="Warning">Warning</button>
+                        <button class="status-filter-btn" data-status="Replace">Replace</button>
+                        <button class="status-filter-btn" data-status="Overdue">Overdue</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trucks List -->
+            <section class="trucks-section" id="trucksList">
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="20" stroke="#ccc" stroke-width="2"/>
+                        <path d="M24 16v8M24 30v2" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>No trucks found matching your filters</p>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ═══ HISTORY TAB ═══ -->
+        <div id="tabHistory" hidden>
+            <section class="history-section">
+                <div class="history-controls">
+                    <input type="text" id="historySearch" class="search-input"
+                           placeholder="Search truck or maintenance type..."
+                           style="max-width:320px;" />
+                </div>
+                <div id="adminHistoryList"></div>
+                <div class="empty-state" id="historyEmpty" style="display:none;">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="20" stroke="#ccc" stroke-width="2"/>
+                        <path d="M24 16v8M24 30v2" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p>No resolved maintenance history yet</p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Maintenance Detail Modal -->
+    <div class="modal-overlay" id="maintenanceModal">
+        <div class="maintenance-modal-box">
+            <div class="maintenance-modal-header">
+                <div class="maintenance-modal-title-row">
+                    <div>
+                        <h2 id="modalTruckName">Truck Name</h2>
+                        <p id="modalKm" class="modal-km">-- KM</p>
+                        <p id="modalDate" class="modal-date"></p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span id="modalComponentCount" class="modal-component-count">0 COMPONENTS</span>
+                        <button class="modal-close-btn" id="closeModal">✕</button>
+                    </div>
+                </div>
+            </div>
+            <div class="maintenance-modal-body">
+                <table class="maintenance-table">
+                    <thead>
+                        <tr>
+                            <th>Maintenance Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/pending-maintenance.js"></script>
+</body>
+</html>

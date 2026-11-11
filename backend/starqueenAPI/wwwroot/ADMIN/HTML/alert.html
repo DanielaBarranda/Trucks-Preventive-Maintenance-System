@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STARQUEEN PMTS - Alerts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/ADMIN/CSS/admin-dashboard.css">
+    <link rel="stylesheet" href="/ADMIN/CSS/alert.css">
+</head>
+
+<body data-sidebar-page="alerts">
+
+    <header class="mobile-header">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <h1>STARQUEEN PMTS</h1>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <section class="page-header">
+            <div>
+                <h1 class="page-title">Alerts &amp; Notifications</h1>
+                <p class="page-subtitle">Stay updated with system alerts and reminders</p>
+            </div>
+            <div id="unreadBadge" class="unread-badge" style="display:none;">0 Unread</div>
+        </section>
+
+        <!-- SP: Unread Per Truck -->
+        <div id="spUnreadPerTruck"></div>
+
+        <!-- SP: Acknowledgement Rate -->
+        <div id="spAcknowledgementRate"></div>
+
+        <!-- Notifications List -->
+        <section class="notif-list-section">
+            <div class="notif-list-header">
+
+                <!-- Filter tabs — data-type must be lowercase to match alert.js -->
+                <div class="notif-type-filters" id="typeFilters">
+                    <button class="notif-filter-btn active" data-type="all">
+                        All
+                        <span class="filter-count" id="filterCountAll">0</span>
+                    </button>
+                    <button class="notif-filter-btn" data-type="urgent">
+                        <span class="filter-dot urgent-dot"></span>
+                        Urgent
+                        <span class="filter-count" id="filterCountUrgent">0</span>
+                    </button>
+                    <button class="notif-filter-btn" data-type="warning">
+                        <span class="filter-dot warning-dot"></span>
+                        Warning
+                        <span class="filter-count" id="filterCountWarning">0</span>
+                    </button>
+                    <button class="notif-filter-btn" data-type="information">
+                        <span class="filter-dot info-dot"></span>
+                        Information
+                        <span class="filter-count" id="filterCountInfo">0</span>
+                    </button>
+                </div>
+
+                <button class="mark-all-read-btn" id="markAllReadBtn">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 8l3 3 7-7" stroke="currentColor" stroke-width="1.8"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Mark all as read
+                </button>
+            </div>
+
+            <div class="notif-list" id="notifList"></div>
+
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                    <circle cx="24" cy="24" r="20" stroke="#ccc" stroke-width="2"/>
+                    <path d="M24 16v8M24 30v2" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <p>No notifications found</p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <div class="footer-content">
+                <p class="footer-copyright">© 2026 StarQueen Planned Maintenance and Tracking System. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Support</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="/ADMIN/JS/config.js"></script>
+    <script src="/ADMIN/JS/sidebar.js"></script>
+    <script src="/ADMIN/JS/alert.js"></script>
+</body>
+</html>
