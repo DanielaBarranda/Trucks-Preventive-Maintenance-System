@@ -20,3 +20,6 @@ Thumbs.db
 
 # Uploaded expense photos (stored per organization, served only through the API)
 backend/starqueenAPI/App_Data/
+
+# Local design mockups and plan workspaces (superpowers)
+.superpowers/
