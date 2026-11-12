@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
-// networkError: simulate a dropped connection (fetch rejects)
-export type MockResponse = { status?: number; json?: unknown; networkError?: boolean };
+// networkError: simulate a dropped connection (fetch rejects); delay: answer after N ms
+export type MockResponse = { status?: number; json?: unknown; networkError?: boolean; delay?: number };
 export type MockRoutes = Record<string, (body: unknown) => MockResponse>;
 
 // Stubs globalThis.fetch. Routes are keyed "METHOD /path" (query string ignored),
@@ -13,6 +13,7 @@ export function mockFetch(routes: MockRoutes) {
     const handler = routes[`${method} ${url.pathname}`];
     const body = typeof init?.body === 'string' ? safeParse(init.body) : init?.body;
     const res = handler ? handler(body) : { status: 404, json: { message: 'Not found' } };
+    if (res.delay) await new Promise((r) => setTimeout(r, res.delay));
     if (res.networkError) throw new TypeError('Failed to fetch');
     const status = res.status ?? 200;
     return new Response(status === 204 || res.json === undefined ? null : JSON.stringify(res.json), {
