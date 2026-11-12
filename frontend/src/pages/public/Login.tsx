@@ -44,7 +44,7 @@ export function Login() {
           <Button type="submit" className="w-full" loading={formState.isSubmitting}>Log in</Button>
         </form>
         <p className="mt-6 text-center text-sm text-stone-500">
-          New company? <Link to="/signup" className="font-medium text-ink underline decoration-stone-300 underline-offset-4 hover:decoration-ink">Create an account</Link>
+          New company? <Link to="/signup" className="font-medium text-accent-700 underline decoration-accent-200 underline-offset-4 hover:decoration-accent-600">Create an account</Link>
         </p>
         <div className="mt-4">
           <Alert tone="info">Demo: owner@northwind.demo / Demo1234!</Alert>

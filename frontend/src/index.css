@@ -5,6 +5,18 @@
 body {
   @apply bg-stone-50 font-sans text-ink antialiased;
   font-feature-settings: 'cv11', 'ss01';
+  caret-color: theme('colors.accent.600');
+}
+
+::selection {
+  background: theme('colors.accent.100');
+  color: theme('colors.accent.800');
+}
+
+/* Keyboard focus is always visible, in the accent */
+:focus-visible {
+  outline: 2px solid theme('colors.accent.600');
+  outline-offset: 2px;
 }
 
 /* Figures line up in columns and look sharp */

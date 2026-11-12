@@ -9,7 +9,7 @@ export const cx = (...classes: (string | false | null | undefined)[]) => classes
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 const buttonStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-ink text-white hover:bg-stone-800',
+  primary: 'bg-accent-600 text-white hover:bg-accent-700 active:bg-accent-800',
   secondary: 'border border-stone-200 bg-white text-ink hover:border-stone-300 hover:bg-stone-50',
   ghost: 'text-stone-600 hover:bg-stone-100 hover:text-ink',
 };
@@ -17,7 +17,7 @@ const buttonStyles: Record<ButtonVariant, string> = {
 export const buttonClass = (variant: ButtonVariant = 'primary', extra?: string) =>
   cx(
     'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors',
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600',
     'disabled:cursor-not-allowed disabled:opacity-50',
     buttonStyles[variant],
     extra,
@@ -45,7 +45,7 @@ export function Card({ className, children }: { className?: string; children: Re
 
 const inputClass =
   'block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-ink ' +
-  'placeholder:text-stone-400 transition-colors focus:border-stone-400 focus:outline-none focus:ring-4 focus:ring-stone-900/5 ' +
+  'placeholder:text-stone-400 transition-colors focus:border-accent-500 focus:outline-none focus:ring-4 focus:ring-accent-600/10 ' +
   'aria-[invalid=true]:border-red-400 aria-[invalid=true]:focus:ring-red-500/10';
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
@@ -165,7 +165,7 @@ export function Spinner({ small = false, inverted = false }: { small?: boolean; 
       aria-label="Loading"
       className={cx(
         'inline-block animate-spin rounded-full border-2',
-        inverted ? 'border-white/30 border-t-white' : 'border-stone-200 border-t-ink',
+        inverted ? 'border-white/30 border-t-white' : 'border-accent-100 border-t-accent-600',
         small ? 'h-4 w-4' : 'h-6 w-6',
       )}
     />
@@ -175,7 +175,7 @@ export function Spinner({ small = false, inverted = false }: { small?: boolean; 
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cx('inline-flex items-center gap-2 font-display text-[15px] font-semibold tracking-tight text-ink', className)}>
-      <span aria-hidden className="h-2 w-2 rounded-full bg-brand" />
+      <span aria-hidden className="h-2 w-2 rounded-full bg-accent-600" />
       FleetPMTS
     </span>
   );

@@ -54,7 +54,7 @@ export function DriverLayout({ children }: { children: ReactNode }) {
               aria-current={t.active ? 'page' : undefined}
               aria-disabled={t.active ? undefined : true}
               title={t.active ? undefined : 'Coming soon'}
-              className={cx('flex flex-col items-center gap-1 py-2.5 text-[11px]', t.active ? 'font-medium text-ink' : 'text-stone-400')}
+              className={cx('flex flex-col items-center gap-1 py-2.5 text-[11px]', t.active ? 'font-medium text-accent-600' : 'text-stone-400')}
             >
               <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 {ICONS[t.label]}

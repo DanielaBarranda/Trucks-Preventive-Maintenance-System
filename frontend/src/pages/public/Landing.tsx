@@ -1,11 +1,26 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { buttonClass, StatusBadge } from '../../components/ui';
 import { PublicLayout } from '../../layouts/PublicLayout';
 
-const features = [
-  { title: 'Alerts', text: 'Know what is due by distance or time, before it becomes overdue.' },
-  { title: 'Driver app', text: 'Drivers log readings, trips and expenses from any phone.' },
-  { title: 'Your data', text: 'Every company’s data is private and kept completely separate.' },
+
+// Line icons (24×24, stroke = currentColor)
+const features: { title: string; text: string; icon: ReactNode }[] = [
+  {
+    title: 'Alerts',
+    text: 'Know what is due by distance or time, before it becomes overdue.',
+    icon: <><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
+  },
+  {
+    title: 'Driver app',
+    text: 'Drivers log readings, trips and expenses from any phone.',
+    icon: <><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2" /></>,
+  },
+  {
+    title: 'Your data',
+    text: 'Every company’s data is private and kept completely separate.',
+    icon: <><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></>,
+  },
 ];
 
 // Illustration only — shows what the dashboard list looks like
@@ -21,11 +36,7 @@ export function Landing() {
       <main className="mx-auto max-w-6xl px-4 sm:px-6">
         <section className="grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[1.15fr_1fr]">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-3 py-1 text-xs text-stone-600">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-              Preventive maintenance for any fleet
-            </p>
-            <h1 className="mt-6 max-w-xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
+            <h1 className="max-w-xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
               Never miss a maintenance date again.
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-stone-500 sm:text-lg">
@@ -59,10 +70,14 @@ export function Landing() {
         </section>
 
         <section className="grid border-t border-stone-200 sm:grid-cols-3 sm:divide-x sm:divide-stone-200">
-          {features.map((f, i) => (
+          {features.map((f) => (
             <div key={f.title} className="py-8 sm:px-8 sm:first:pl-0">
-              <p className="num text-xs text-stone-400">0{i + 1}</p>
-              <h2 className="mt-3 font-display font-semibold text-ink">{f.title}</h2>
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent-50 text-accent-600">
+                <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  {f.icon}
+                </svg>
+              </span>
+              <h2 className="mt-4 font-display font-semibold text-ink">{f.title}</h2>
               <p className="mt-1.5 text-sm leading-relaxed text-stone-500">{f.text}</p>
             </div>
           ))}

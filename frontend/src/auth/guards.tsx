@@ -25,7 +25,7 @@ export function homePathFor(session: Session): string {
 function FullPageSpinner() {
   return (
     <div className="flex min-h-screen items-center justify-center" role="status" aria-label="Loading">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-stone-200 border-t-ink" />
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent-100 border-t-accent-600" />
     </div>
   );
 }

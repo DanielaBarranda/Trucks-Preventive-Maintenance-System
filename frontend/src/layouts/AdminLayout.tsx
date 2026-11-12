@@ -66,7 +66,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                       end
                       onClick={() => setOpen(false)}
                       className={({ isActive }) =>
-                        cx(itemClass, isActive ? 'bg-stone-100 font-medium text-ink' : 'text-stone-600 hover:bg-stone-100/70 hover:text-ink')
+                        cx(itemClass, isActive ? 'bg-accent-50 font-medium text-accent-700' : 'text-stone-600 hover:bg-stone-100 hover:text-ink')
                       }
                     >
                       {item.label}
@@ -83,7 +83,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         ))}
       </div>
       <div className="flex items-center gap-3 border-t border-stone-200 px-4 py-4">
-        <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-stone-100 text-xs font-medium text-stone-600">
+        <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent-50 text-xs font-medium text-accent-700">
           {initials}
         </span>
         <div className="min-w-0 flex-1">

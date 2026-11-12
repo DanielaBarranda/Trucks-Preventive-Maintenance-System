@@ -83,7 +83,7 @@ export function Signup() {
             <div className="mt-2 flex flex-wrap gap-4">
               {CATEGORIES.map((c) => (
                 <label key={c} className="flex items-center gap-2 text-sm text-stone-700">
-                  <input type="checkbox" value={c} className="h-4 w-4 rounded border-stone-300 accent-stone-900" {...register('template_categories')} />
+                  <input type="checkbox" value={c} className="h-4 w-4 rounded border-stone-300 accent-accent-600" {...register('template_categories')} />
                   {c}
                 </label>
               ))}
@@ -92,7 +92,7 @@ export function Signup() {
           <Button type="submit" className="w-full" loading={formState.isSubmitting}>Create account</Button>
         </form>
         <p className="mt-6 text-center text-sm text-stone-500">
-          Already have an account? <Link to="/login" className="font-medium text-ink underline decoration-stone-300 underline-offset-4 hover:decoration-ink">Log in</Link>
+          Already have an account? <Link to="/login" className="font-medium text-accent-700 underline decoration-accent-200 underline-offset-4 hover:decoration-accent-600">Log in</Link>
         </p>
       </AuthCard>
     </PublicLayout>
