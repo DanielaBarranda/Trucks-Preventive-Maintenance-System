@@ -1,49 +1,104 @@
-# StarQueen PMTS
+# FleetPMTS
 
-A preventive maintenance and truck tracking system for a trucking fleet. Admins monitor trucks, maintenance schedules, expenses and alerts. Drivers log odometer readings, truck activity, expenses and maintenance.
+*Working name. A final name is coming.*
 
-## Project structure
+A preventive maintenance and tracking platform for businesses that run vehicles and drivers: trucks, vans, motorcycles, buses. Any company can sign up, set up its own fleet, and keep its data completely separate from every other company.
 
-```
-backend/   ASP.NET Core 8 Web API (Dapper + SQL Server)
-  starqueen/      Models, repositories, services
-  starqueenAPI/   API controllers
-web/       Static HTML/CSS/JS front end
-  ADMIN/          Dashboard, pending maintenance, expenses, alerts, activity logs, profile
-  DRIVERS/        Dashboard, maintenance log, truck activity, expenses, odometer
-```
+- **Owners and admins** manage vehicles, drivers, and maintenance schedules, and watch alerts, expenses, and reports.
+- **Drivers** log odometer readings, trips, and expenses (with photo proof) for the vehicle assigned to them.
+- **Maintenance alerts** are raised automatically when a vehicle is due, by distance or by time **since its last service**.
+
+> **Status:** the backend (database + API) is complete. A new React front end is being built next; until then, use the API through Swagger. The old `web/` pages no longer match the API.
+
+## Features
+
+- **Multi-organization (multi-tenant).** Self-service sign-up creates an organization and its Owner account.
+- **Tenant isolation enforced by the database.** Every table carries `organization_id`, and SQL Server **Row-Level Security** hides other organizations' rows, even if a query forgets to filter. Composite foreign keys stop a row from pointing at another organization's data.
+- **Role-based access control.** Fixed roles map to permissions:
+
+  | Permission | Owner | Admin | Driver |
+  |---|:-:|:-:|:-:|
+  | Organization settings, manage admins | ✅ | | |
+  | Manage drivers, vehicles, schedules | ✅ | ✅ | |
+  | Reports and alerts | ✅ | ✅ | |
+  | Submit logs (own assigned vehicle only) | | | ✅ |
+
+- **Accounts.** The Owner creates Admins; Owners and Admins create Drivers with a temporary password, which must be changed at first login.
+- **Maintenance schedules.** New organizations start from editable templates (Truck, Van & Car, Motorcycle). Distances are in km or miles per organization.
+- **Expenses with photo proof.** JPG/PNG only (checked by file content), up to 10 MB each, stored privately per organization. An expense can be linked to the maintenance task it paid for, which records the service and clears its alert.
+- **Reports.** Fleet overview, monthly expenses, driver activity, and maintenance status per vehicle.
 
 ## Tech stack
 
 | Layer | Technology |
 |---|---|
 | Backend | ASP.NET Core 8 Web API (C#) |
-| Data access | Dapper + Microsoft.Data.SqlClient, stored procedures and views |
-| Database | SQL Server (LocalDB for development) |
-| Auth | Cookie authentication (HttpOnly, SameSite=Strict), role-based (`Admin`, `Driver`), PBKDF2 password hashing via ASP.NET Core Identity's `PasswordHasher` |
-| Front end | Static HTML, CSS and vanilla JavaScript, served by the API |
-| API docs | Swagger / OpenAPI (Development only, at `/swagger`) |
+| Data access | Dapper + Microsoft.Data.SqlClient |
+| Database | SQL Server (LocalDB for development) with Row-Level Security |
+| Auth | HttpOnly cookie (SameSite=Strict), PBKDF2 password hashing (ASP.NET Core Identity's `PasswordHasher`) |
+| Tests | xUnit + `WebApplicationFactory`, running against a real SQL Server test database |
+| API docs | Swagger / OpenAPI (Development only) |
+| Front end | React + TypeScript (in progress) |
 
 ## Running locally
 
-**Requirements:** .NET 8 SDK and SQL Server LocalDB (comes with Visual Studio).
+**Requirements:** .NET 8 SDK, SQL Server LocalDB (included with Visual Studio), and `sqlcmd`.
 
-1. Make sure the `Starqueen_PMTS` database exists in `(localdb)\MSSQLLocalDB`.
-   The connection string is in `backend/starqueenAPI/appsettings.json` under `ConnectionStrings:DefaultConnection`.
-2. Trust the local HTTPS certificate (one time only):
+1. **Create the database** with demo data:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File database/setup.ps1
+   ```
+   This creates `FleetPMTS_Dev` on `(localdb)\MSSQLLocalDB`, then runs `database/schema.sql` and `database/seed.sql`. Re-running it resets the database to the demo data.
+
+2. **Trust the local HTTPS certificate** (one time only):
    ```
    dotnet dev-certs https --trust
    ```
-3. Run the app:
+
+3. **Run the API:**
    ```
    cd backend/starqueenAPI
    dotnet run --launch-profile https
    ```
-4. Open **https://localhost:7273** and log in. The API serves both the web pages and the data, so there is no separate front-end server.
 
-On first start, any passwords still stored as plain text are hashed automatically; users keep logging in with the same password.
+4. **Open Swagger** at https://localhost:7273/swagger. Call `POST /api/auth/login` first; the login cookie is then sent with every other call. `backend/starqueenAPI/starqueenAPI.http` has ready-made requests too.
 
-> Never commit real database credentials. For a remote database, set the connection string through `dotnet user-secrets` or the `ConnectionStrings__DefaultConnection` environment variable.
+The connection string is `ConnectionStrings:DefaultConnection` in `backend/starqueenAPI/appsettings.json`. For any other database, set it with `dotnet user-secrets` or the `ConnectionStrings__DefaultConnection` environment variable. Never commit real credentials.
+
+### Demo accounts
+
+Every demo account's password is **`Demo1234!`**.
+
+| Organization | Email | Role |
+|---|---|---|
+| Northwind Logistics (PHP, km) | `owner@northwind.demo` | Owner |
+| | `admin@northwind.demo` | Admin |
+| | `driver1@northwind.demo` … `driver4@northwind.demo` | Drivers (driver3 has no vehicle) |
+| Swift Riders Delivery (USD, mi) | `owner@swiftriders.demo` | Owner |
+| | `rider1@swiftriders.demo` | Driver |
+
+### Running the tests
+
+```
+dotnet test backend/starqueen.Tests
+```
+
+The tests create (and recreate) their own `FleetPMTS_Test` database. They include an isolation sweep that tries every endpoint with another organization's IDs and fails if anything leaks.
+
+## Project structure
+
+```
+database/
+  schema.sql        Tables, Row-Level Security, auth and report procedures, templates
+  seed.sql          Demo organizations and data
+  setup.ps1         Creates the database and runs both scripts
+backend/
+  starqueen/        Data access, models, services (password hashing, maintenance alerts, uploads)
+  starqueenAPI/     API controllers, authentication, authorization
+  starqueen.Tests/  Integration tests
+docs/superpowers/   Design spec and implementation plans
+web/                Previous front end (being replaced)
+```
 
 ## Credits
 
