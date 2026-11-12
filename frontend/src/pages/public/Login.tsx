@@ -43,8 +43,8 @@ export function Login() {
           </Field>
           <Button type="submit" className="w-full" loading={formState.isSubmitting}>Log in</Button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
-          New company? <Link to="/signup" className="font-semibold text-blue-700 hover:text-blue-800">Create an account</Link>
+        <p className="mt-6 text-center text-sm text-stone-500">
+          New company? <Link to="/signup" className="font-medium text-ink underline decoration-stone-300 underline-offset-4 hover:decoration-ink">Create an account</Link>
         </p>
         <div className="mt-4">
           <Alert tone="info">Demo: owner@northwind.demo / Demo1234!</Alert>

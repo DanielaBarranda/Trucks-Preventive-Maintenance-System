@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { evaluateMaintenance, getMaintenanceStatus, getMyVehicle } from '../../api/fleet';
 import { useSession } from '../../auth/SessionProvider';
-import { Button, Card, RetryAlert, Spinner } from '../../components/ui';
+import { Button, cx, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
 import { DriverLayout } from '../../layouts/DriverLayout';
 import { firstName, formatDistance } from '../../lib/format';
 
@@ -31,48 +31,60 @@ export function Home() {
 
   const unit = session?.organization.distance_unit ?? 'km';
   const rows = statuses.data ?? [];
-  const due = rows.filter((r) => r.status === 'Warning' || URGENT.includes(r.status));
+  const due = rows
+    .filter((r) => r.status === 'Warning' || URGENT.includes(r.status))
+    .sort((a, b) => Number(URGENT.includes(b.status)) - Number(URGENT.includes(a.status)));  // overdue first
   const latest = rows.reduce<number | null>((max, r) => (r.current_reading != null && (max == null || r.current_reading > max) ? r.current_reading : max), null);
   const tone = due.some((r) => URGENT.includes(r.status)) ? 'red' : due.length ? 'amber' : 'green';
 
   return (
     <DriverLayout>
-      <div data-testid="page-driver-home" className="space-y-4">
-        <p className="text-slate-600">Hi {firstName(session?.user.full_name ?? '')} 👋</p>
+      <div data-testid="page-driver-home" className="space-y-5">
+        <div>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
+            Hi {firstName(session?.user.full_name ?? '')}
+          </h1>
+          <p className="text-sm text-stone-500">{session?.organization.name}</p>
+        </div>
 
         {vehicle.isPending ? (
-          <div className="flex justify-center py-10"><Spinner /></div>
+          <div className="flex justify-center py-12"><Spinner /></div>
         ) : vehicle.error ? (
           <RetryAlert message={vehicle.error.message} onRetry={() => void vehicle.refetch()} />
         ) : !vehicle.data ? (
-          <Card className="text-center">
-            <p className="font-semibold text-slate-800">No vehicle assigned yet.</p>
-            <p className="mt-1 text-sm text-slate-500">Ask your admin to assign one to you.</p>
-          </Card>
+          <div className="rounded-2xl border border-dashed border-stone-300 px-6 py-10 text-center">
+            <p className="font-medium text-ink">No vehicle assigned yet.</p>
+            <p className="mt-1 text-sm text-stone-500">Ask your admin to assign one to you.</p>
+          </div>
         ) : (
           <>
-            <Card className="bg-white">
-              <p className="text-lg font-semibold text-slate-900">{vehicle.data.name}</p>
-              <p className="text-sm text-slate-500">
-                {vehicle.data.plate_number} · {formatDistance(latest, unit)}
-              </p>
-            </Card>
+            <section className="rounded-2xl border border-stone-200 bg-white p-5">
+              <p className="text-xs font-medium text-stone-500">Your vehicle</p>
+              <p className="mt-1 font-medium text-ink">{vehicle.data.name}</p>
+              <p className="text-sm text-stone-500">{vehicle.data.plate_number}</p>
+              <div className="mt-5 border-t border-stone-100 pt-4">
+                <p className="text-xs font-medium text-stone-500">Odometer</p>
+                <p className="num mt-1 text-4xl font-semibold text-ink">{formatDistance(latest, unit)}</p>
+              </div>
+            </section>
 
             {statuses.isPending ? (
               <div className="flex justify-center py-4"><Spinner small /></div>
             ) : statuses.error ? (
               <RetryAlert message={statuses.error.message} onRetry={() => void statuses.refetch()} />
             ) : (
-              <DueCard tone={tone} tasks={due.map((d) => `${d.task} (${d.status.toLowerCase()})`)} />
+              <DueCard tone={tone} tasks={due.map((d) => ({ task: d.task, status: d.status }))} />
             )}
 
-            <div className="grid gap-3">
-              <Button disabled className="py-3 text-base">+ Log odometer</Button>
-              <Button disabled variant="secondary" className="py-3 text-base">▶ Start trip</Button>
-              <Button disabled variant="secondary" className="py-3 text-base">
-                {currencySymbol(session?.organization.currency_code ?? 'PHP')} Add expense
-              </Button>
-              <p className="text-center text-xs text-slate-500">Logging readings, trips and expenses is coming soon.</p>
+            <div className="grid gap-2.5 pt-1">
+              <Button disabled className="rounded-xl py-3.5 text-base">+ Log odometer</Button>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Button disabled variant="secondary" className="rounded-xl py-3.5">Start trip</Button>
+                <Button disabled variant="secondary" className="rounded-xl py-3.5">
+                  {currencySymbol(session?.organization.currency_code ?? 'PHP')} Add expense
+                </Button>
+              </div>
+              <p className="pt-1 text-center text-xs text-stone-400">Logging readings, trips and expenses is coming soon.</p>
             </div>
           </>
         )}
@@ -82,24 +94,34 @@ export function Home() {
 }
 
 const DUE_STYLES = {
-  red: 'border-red-200 bg-red-50 text-red-800',
-  amber: 'border-amber-200 bg-amber-50 text-amber-800',
-  green: 'border-green-200 bg-green-50 text-green-800',
+  red: 'border-red-200 bg-red-50/60',
+  amber: 'border-amber-200 bg-amber-50/60',
+  green: 'border-stone-200 bg-white',
 };
 
-function DueCard({ tone, tasks }: { tone: keyof typeof DUE_STYLES; tasks: string[] }) {
+function DueCard({ tone, tasks }: { tone: keyof typeof DUE_STYLES; tasks: { task: string; status: string }[] }) {
   return (
-    <div data-testid="due-card" data-tone={tone} className={`rounded-lg border p-3 ${DUE_STYLES[tone]}`}>
+    <section data-testid="due-card" data-tone={tone} className={cx('rounded-2xl border', DUE_STYLES[tone])}>
       {tasks.length === 0 ? (
-        <p className="font-semibold">All maintenance is up to date ✓</p>
+        <p className="flex items-center gap-2 px-5 py-4 text-sm text-stone-700">
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-green-600" />
+          All maintenance is up to date
+        </p>
       ) : (
         <>
-          <p className="font-semibold">{tasks.length} task{tasks.length > 1 ? 's' : ''} need{tasks.length > 1 ? '' : 's'} attention</p>
-          <ul className="mt-1 list-inside list-disc text-sm">
-            {tasks.map((t) => <li key={t}>{t}</li>)}
+          <p className={cx('px-5 pt-4 text-sm font-semibold', tone === 'red' ? 'text-red-800' : 'text-amber-800')}>
+            {tasks.length} task{tasks.length > 1 ? 's' : ''} need{tasks.length > 1 ? '' : 's'} attention
+          </p>
+          <ul className="mt-2 divide-y divide-stone-900/5 px-5 pb-2">
+            {tasks.map((t) => (
+              <li key={t.task} className="flex items-center justify-between py-2.5 text-sm">
+                <span className="text-stone-800">{t.task}</span>
+                <StatusBadge status={t.status} />
+              </li>
+            ))}
           </ul>
         </>
       )}
-    </div>
+    </section>
   );
 }

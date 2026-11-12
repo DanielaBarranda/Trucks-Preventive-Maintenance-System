@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 body {
-  @apply bg-slate-100 text-slate-900 antialiased;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  @apply bg-stone-50 font-sans text-ink antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Figures line up in columns and look sharp */
+.num {
+  @apply font-display tabular-nums tracking-tight;
 }

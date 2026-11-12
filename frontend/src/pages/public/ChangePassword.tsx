@@ -58,7 +58,7 @@ export function ChangePassword() {
         <button
           type="button"
           onClick={() => logout().then(() => navigate('/login', { replace: true }), (e: Error) => setServerError(e.message))}
-          className="mt-4 w-full text-center text-sm text-slate-500 hover:text-slate-700"
+          className="mt-4 w-full text-center text-sm text-stone-500 hover:text-ink"
         >
           Log out
         </button>

@@ -79,11 +79,11 @@ export function Signup() {
             </Field>
           </div>
           <fieldset>
-            <legend className="text-sm font-medium text-slate-700">Vehicle types (starter maintenance schedules)</legend>
+            <legend className="text-sm font-medium text-stone-700">Vehicle types (starter maintenance schedules)</legend>
             <div className="mt-2 flex flex-wrap gap-4">
               {CATEGORIES.map((c) => (
-                <label key={c} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input type="checkbox" value={c} className="h-4 w-4 rounded border-slate-300 text-blue-700" {...register('template_categories')} />
+                <label key={c} className="flex items-center gap-2 text-sm text-stone-700">
+                  <input type="checkbox" value={c} className="h-4 w-4 rounded border-stone-300 accent-stone-900" {...register('template_categories')} />
                   {c}
                 </label>
               ))}
@@ -91,8 +91,8 @@ export function Signup() {
           </fieldset>
           <Button type="submit" className="w-full" loading={formState.isSubmitting}>Create account</Button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
-          Already have an account? <Link to="/login" className="font-semibold text-blue-700 hover:text-blue-800">Log in</Link>
+        <p className="mt-6 text-center text-sm text-stone-500">
+          Already have an account? <Link to="/login" className="font-medium text-ink underline decoration-stone-300 underline-offset-4 hover:decoration-ink">Log in</Link>
         </p>
       </AuthCard>
     </PublicLayout>

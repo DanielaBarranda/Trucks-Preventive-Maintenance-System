@@ -29,7 +29,8 @@ it('shows assigned vehicle and latest reading', async () => {
   mockFetch(routes());
   renderApp('/driver');
   expect(await screen.findByText('Isuzu Forward')).toBeInTheDocument();
-  expect(await screen.findByText(/NWL-1001 · 16,000 km/)).toBeInTheDocument();
+  expect(await screen.findByText('NWL-1001')).toBeInTheDocument();
+  expect(await screen.findByText('16,000 km')).toBeInTheDocument();
   expect(screen.getByText(/Hi Ben/)).toBeInTheDocument();
 });
 
