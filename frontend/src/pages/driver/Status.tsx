@@ -45,8 +45,9 @@ function StatusList() {
             <div className="min-w-0">
               <p data-testid="task-name" className="font-medium text-ink">{r.task}</p>
               <p className="text-sm text-stone-500">
-                {r.distance_since != null && `${formatDistance(r.distance_since, unit)} since last service · `}
-                {r.last_service_date ? `Last done ${formatDateOnly(r.last_service_date).split(', ')[1]}` : 'Never done'}
+                {r.last_service_date
+                  ? `${r.distance_since != null ? `${formatDistance(r.distance_since, unit)} since last service · ` : ''}Last done ${formatDateOnly(r.last_service_date).split(', ')[1]}`
+                  : 'Never done'}
               </p>
             </div>
             <span className="shrink-0 pt-0.5"><StatusBadge status={r.status} /></span>

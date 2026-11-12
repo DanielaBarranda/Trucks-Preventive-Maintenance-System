@@ -54,7 +54,7 @@ function ExpenseList() {
             </div>
             <div className="shrink-0 text-right">
               <p className="num font-semibold text-ink">{formatMoney(e.amount, currency)}</p>
-              <a href={expensePhotoUrl(e.id, 'receipt')} target="_blank" rel="noreferrer" className="text-xs text-accent-700 underline decoration-accent-200 underline-offset-2">
+              <a href={expensePhotoUrl(e.id, 'receipt')} target="_blank" rel="noreferrer" className="-mr-1 inline-block px-1 py-1.5 text-sm text-accent-700 underline decoration-accent-200 underline-offset-2">
                 Receipt
               </a>
             </div>

@@ -56,6 +56,7 @@ it('shows distance since service and when it was last done', async () => {
   expect(brakes).toHaveTextContent('Last done Nov 1');
   const coolant = screen.getAllByTestId('status-item').find((i) => i.textContent?.includes('Coolant'))!;
   expect(coolant).toHaveTextContent('Never done');
+  expect(coolant).not.toHaveTextContent('since last service');   // there was no last service
 });
 
 it('shows a summary line', async () => {

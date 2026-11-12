@@ -8,7 +8,7 @@ A preventive maintenance and tracking platform for businesses that run vehicles 
 - **Drivers** log odometer readings, trips, and expenses (with photo proof) for the vehicle assigned to them.
 - **Maintenance alerts** are raised automatically when a vehicle is due, by distance or by time **since its last service**.
 
-> **Status:** the backend (database + API) is complete. The new React front end has its first working screens (sign-up, login, admin dashboard, driver home); more screens are in progress. The old `web/` pages are obsolete and will be removed.
+> **Status:** the backend (database + API) is complete. The new React front end has sign-up, login and the admin dashboard, and the driver app is complete (log odometer readings, add and run trips, submit expenses with camera photos, see maintenance status). Admin management screens are next. The old `web/` pages are obsolete and will be removed.
 
 ## Features
 
