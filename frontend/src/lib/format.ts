@@ -8,6 +8,16 @@ export function formatMoney(amount: number, currency: string): string {
   }
 }
 
+// '₱' for PHP, '$' for USD; the code itself when unknown
+export function currencySymbol(currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).formatToParts(0)
+      .find((p) => p.type === 'currency')?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
 export function formatDistance(value: number | null | undefined, unit: string): string {
   if (value === null || value === undefined) return '—';
   return `${value.toLocaleString('en-US')} ${unit}`;

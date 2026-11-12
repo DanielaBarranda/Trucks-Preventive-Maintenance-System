@@ -5,18 +5,9 @@ import { useSession } from '../../auth/SessionProvider';
 import { NoVehicleCard, useNotice } from '../../components/DriverPage';
 import { Alert, buttonClass, cx, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
 import { DriverLayout } from '../../layouts/DriverLayout';
-import { firstName, formatDistance } from '../../lib/format';
+import { currencySymbol, firstName, formatDistance } from '../../lib/format';
 
 const URGENT = ['Overdue', 'Replace'];
-
-function currencySymbol(currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency }).formatToParts(0)
-      .find((p) => p.type === 'currency')?.value ?? currency;
-  } catch {
-    return currency;
-  }
-}
 
 export function Home() {
   const { session } = useSession();
