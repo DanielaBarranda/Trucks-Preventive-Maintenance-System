@@ -162,4 +162,53 @@ public class AccountTests(ApiFactory api)
             new { full_name = "Dup", email = "rider1@swiftriders.demo", temporary_password = "TempPass123" });
         Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
     }
+
+    [Fact]
+    public async Task DeactivatingDriver_EndsTheirLiveSession()
+    {
+        var owner = await api.SignupNewOrg();
+        var (driver, driverId) = await api.NewDriver(owner);
+        await ApiFactory.NewVehicle(owner, driverId);
+        Assert.Equal(HttpStatusCode.OK, (await driver.GetAsync("/api/vehicles/mine")).StatusCode);
+
+        var drivers = (await (await owner.GetAsync("/api/drivers")).Json()).EnumerateArray();
+        string email = drivers.Single(d => d.GetProperty("id").GetInt32() == driverId).GetProperty("email").GetString()!;
+        (await owner.PutAsJsonAsync($"/api/drivers/{driverId}", new { full_name = "Gone", email, is_active = false })).EnsureSuccessStatusCode();
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await driver.GetAsync("/api/vehicles/mine")).StatusCode);
+    }
+
+    [Fact]
+    public async Task ResettingPassword_ForcesChangeInLiveSession()
+    {
+        var owner = await api.SignupNewOrg();
+        var (driver, driverId) = await api.NewDriver(owner);
+        await ApiFactory.NewVehicle(owner, driverId);
+
+        (await owner.PostAsJsonAsync($"/api/drivers/{driverId}/reset-password", new { temporary_password = "ResetPass123" }))
+            .EnsureSuccessStatusCode();
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await driver.GetAsync("/api/vehicles/mine")).StatusCode);
+    }
+
+    [Fact]
+    public async Task DistanceUnitChange_RefusedOnceReadingsExist()
+    {
+        var owner = await api.LoginAs("owner@northwind.demo");   // has odometer readings
+        var res = await owner.PutAsJsonAsync("/api/organization",
+            new { name = "Northwind Logistics", currency_code = "PHP", distance_unit = "mi" });
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+    }
+
+    [Fact]
+    public async Task DistanceUnitChange_BeforeAnyReadings_ConvertsSchedules()
+    {
+        var owner = await api.SignupNewOrg();   // km, Truck templates, no readings
+        (await owner.PutAsJsonAsync("/api/organization",
+            new { name = "Now in miles", currency_code = "USD", distance_unit = "mi" })).EnsureSuccessStatusCode();
+
+        var oil = (await (await owner.GetAsync("/api/schedules")).Json()).EnumerateArray()
+            .Single(s => s.GetProperty("task").GetString() == "Engine Oil & Filter Replacement");
+        Assert.Equal(11800, oil.GetProperty("km_replace").GetInt32());   // 19000 km -> 11,800 mi
+    }
 }

@@ -36,7 +36,9 @@ public class DriverLogTests(ApiFactory api)
         var owner = await api.SignupNewOrg("Truck,Motorcycle");
         var (driver, driverId) = await api.NewDriver(owner);
         int vehicle = await ApiFactory.NewVehicle(owner, driverId, "Truck");
-        return (owner, driver, await ApiFactory.OrgIdOf(owner), vehicle);
+        int org = await ApiFactory.OrgIdOf(owner);
+        AddReading(org, vehicle, driverId, 0, DateTime.UtcNow.AddDays(-1));   // starting reading
+        return (owner, driver, org, vehicle);
     }
 
     [Fact]
@@ -65,7 +67,7 @@ public class DriverLogTests(ApiFactory api)
 
         using var c = OpenAs(f.Org);
         Assert.True(c.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.Notifications WHERE vehicle_id = @v AND type = 'Urgent'", new { v = f.Vehicle }) > 0);
-        Assert.Equal(1, c.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.Notifications WHERE vehicle_id = @v AND type = 'Information'", new { v = f.Vehicle }));
+        Assert.Equal(1, c.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.Notifications WHERE vehicle_id = @v AND type = 'Information'", new { v = f.Vehicle }));   // only the API-posted reading notifies
     }
 
     [Fact]

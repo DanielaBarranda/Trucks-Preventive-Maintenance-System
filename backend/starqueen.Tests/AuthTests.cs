@@ -132,4 +132,15 @@ public class AuthTests(ApiFactory api)
 
         Assert.NotEqual(HttpStatusCode.Forbidden, (await client.GetAsync("/api/reports/fleet-overview")).StatusCode);
     }
+
+    [Fact]
+    public async Task Login_AllowedWhileMustChangeCookiePresent()
+    {
+        // Shared phone: the previous user still has to change their password
+        var client = await api.LoginAs(NewNorthwindUser(mustChange: true));
+        var res = await client.PostAsJsonAsync("/api/auth/login",
+            new { email = "owner@northwind.demo", password = SeedTests.DemoPassword });
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        Assert.True((await res.Json()).GetProperty("success").GetBoolean());
+    }
 }

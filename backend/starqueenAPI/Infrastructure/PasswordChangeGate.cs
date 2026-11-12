@@ -1,12 +1,13 @@
 namespace starqueenAPI.Infrastructure
 {
     // Accounts created with a temporary password must change it before using the API.
-    // Only change-password, logout and "me" are allowed until then.
+    // Only change-password, logout, "me" (and logging in as someone else) are allowed until then.
     public class PasswordChangeGate
     {
         private static readonly string[] AllowedPaths =
         {
-            "/api/auth/change-password", "/api/auth/logout", "/api/auth/me"
+            "/api/auth/change-password", "/api/auth/logout", "/api/auth/me",
+            "/api/auth/login", "/api/auth/signup"   // someone else may log in on a shared device
         };
 
         private readonly RequestDelegate _next;

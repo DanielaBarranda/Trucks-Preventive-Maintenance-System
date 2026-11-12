@@ -27,7 +27,12 @@ namespace starqueenAPI.Controllers
         // PUT /api/organization — Owner only
         [HttpPut]
         [Authorize(Policy = Permissions.OrgManage)]
-        public IActionResult Update(UpdateOrganizationRequest request)
-            => _organizations.Update(request.Name.Trim(), request.CurrencyCode, request.DistanceUnit) ? Ok(true) : NotFound();
+        public IActionResult Update(UpdateOrganizationRequest request) =>
+            _organizations.Update(request.Name.Trim(), request.CurrencyCode, request.DistanceUnit) switch
+            {
+                WriteResult.Ok => Ok(true),
+                WriteResult.Conflict => Conflict(new { message = "The distance unit can't be changed after odometer readings have been recorded." }),
+                _ => NotFound()
+            };
     }
 }

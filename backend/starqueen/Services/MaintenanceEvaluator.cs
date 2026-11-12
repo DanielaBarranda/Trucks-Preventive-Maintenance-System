@@ -25,8 +25,9 @@ namespace starqueen.Services
         // Returns how many alerts were created or escalated for this vehicle
         public int Evaluate(int vehicleId)
         {
-            using var scope = new TransactionScope();
+            using var scope = DbTransactions.ReadCommitted();
             using var c = _db.CreateConnection();
+            DbTransactions.LockVehicle(c, vehicleId);   // concurrent evaluations of one vehicle run one at a time
 
             var vehicle = c.QuerySingleOrDefault<(string Name, string Plate)>(
                 "SELECT name, plate_number FROM dbo.Vehicles WHERE id = @vehicleId", new { vehicleId });

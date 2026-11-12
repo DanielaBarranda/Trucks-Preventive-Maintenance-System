@@ -226,7 +226,7 @@ namespace starqueenAPI.Controllers
                 processName = await _storage.Save(OrgId, processPhoto!);
                 receiptName = await _storage.Save(OrgId, receiptPhoto!);
 
-                using var scope = new TransactionScope();
+                using var scope = DbTransactions.ReadCommitted();
                 id = _expenses.Create(new Expense
                 {
                     VehicleId = vehicle.Id,

@@ -46,6 +46,10 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
         options.SlidingExpiration = false;
 
+        // Re-check the account on every request so changes take effect immediately:
+        // deactivated users lose access, and a password reset forces the change now.
+        options.Events.OnValidatePrincipal = SessionValidator.ValidateAsync;
+
         // This is an API: answer 401/403 instead of redirecting to a login page
         options.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
         options.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };

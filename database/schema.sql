@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
    FleetPMTS — database schema
    Multi-organization fleet maintenance platform.
 
@@ -10,6 +10,19 @@
 SET NOCOUNT ON;
 SET QUOTED_IDENTIFIER ON;  -- required for filtered indexes (sqlcmd defaults it OFF)
 SET ANSI_NULLS ON;
+GO
+
+/* ---------- Safety guard: never run against the legacy StarQueen database ----------
+   This script drops tables such as dbo.Users. Stop immediately if the target is the
+   legacy database, or any database that still has legacy StarQueen tables. */
+IF DB_NAME() = N'Starqueen_PMTS'
+   OR OBJECT_ID(N'dbo.Truck_Activity') IS NOT NULL
+   OR OBJECT_ID(N'dbo.Truck_Expenses') IS NOT NULL
+   OR OBJECT_ID(N'dbo.Admin_Notifications') IS NOT NULL
+BEGIN
+    RAISERROR (N'Refusing to run: this looks like the legacy StarQueen database. Nothing was changed.', 16, 1);
+    SET NOEXEC ON;   -- with plain sqlcmd (no -b), skip every following batch
+END
 GO
 
 /* ---------- Drop existing objects (dependency order) ---------- */
@@ -421,7 +434,9 @@ GO
 --   Distance: Overdue >= km_overdue, Replace >= km_replace, Warning >= km_warning, else Good
 --   Months:   Overdue >= interval + 1, Replace >= interval, Warning >= floor(80% of interval) (when >= 1)
 --   Result:   the worse of the two; "No Data" when neither can be computed
---   Last service: latest 'Done' log; otherwise reading 0 and the vehicle's created_at
+--   Last service: latest 'Done' log. With no service yet (or a service recorded without a
+--   reading), distance counts from the vehicle's FIRST recorded reading, so a used vehicle
+--   added at 150,000 km isn't overdue on day one; months count from the vehicle's created_at.
 CREATE PROCEDURE dbo.rpt_MaintenanceStatus
     @vehicle_id INT = NULL
 AS
@@ -450,12 +465,14 @@ BEGIN
     JOIN dbo.MaintenanceSchedules s ON s.vehicle_type_id = v.vehicle_type_id
     OUTER APPLY (SELECT TOP 1 o.reading FROM dbo.OdometerReadings o
                  WHERE o.vehicle_id = v.id ORDER BY o.recorded_at DESC, o.id DESC) cr
+    OUTER APPLY (SELECT TOP 1 o.reading FROM dbo.OdometerReadings o
+                 WHERE o.vehicle_id = v.id ORDER BY o.recorded_at ASC, o.id ASC) fr
     OUTER APPLY (SELECT TOP 1 COALESCE(l.resolved_at, l.created_at) AS service_date, l.reading_at_log
                  FROM dbo.MaintenanceLogs l
                  WHERE l.vehicle_id = v.id AND l.schedule_id = s.id AND l.status = 'Done'
                  ORDER BY COALESCE(l.resolved_at, l.created_at) DESC, l.id DESC) ls
     CROSS APPLY (SELECT CASE WHEN cr.reading IS NULL THEN NULL
-                             ELSE cr.reading - COALESCE(ls.reading_at_log, 0) END AS distance_since) dist
+                             ELSE cr.reading - COALESCE(ls.reading_at_log, fr.reading, 0) END AS distance_since) dist
     CROSS APPLY (SELECT COALESCE(ls.service_date, v.created_at) AS since) b
     CROSS APPLY (SELECT CASE WHEN m.raw < 0 THEN 0 ELSE m.raw END AS months_since
                  FROM (SELECT DATEDIFF(month, b.since, @now)
@@ -530,4 +547,24 @@ BEGIN
     WHERE u.role = 'Driver'
     ORDER BY u.full_name;
 END
+GO
+
+/* =====================================================================
+   INDEXES
+   Keep per-vehicle lookups from scanning whole tables (which, under
+   concurrent writes, would also lock rows of other organizations).
+   ===================================================================== */
+CREATE INDEX IX_OdometerReadings_vehicle ON dbo.OdometerReadings (vehicle_id, recorded_at DESC, id DESC) INCLUDE (reading);
+CREATE INDEX IX_MaintenanceLogs_vehicle_schedule ON dbo.MaintenanceLogs (vehicle_id, schedule_id) INCLUDE (status, resolved, resolved_at, reading_at_log);
+CREATE INDEX IX_Expenses_vehicle ON dbo.Expenses (vehicle_id) INCLUDE (amount, expense_date);
+CREATE INDEX IX_Expenses_driver ON dbo.Expenses (driver_id);
+CREATE INDEX IX_Trips_vehicle ON dbo.Trips (vehicle_id);
+CREATE INDEX IX_Trips_driver ON dbo.Trips (driver_id);
+CREATE INDEX IX_Notifications_vehicle ON dbo.Notifications (vehicle_id, is_read);
+CREATE INDEX IX_Notifications_log ON dbo.Notifications (maintenance_log_id);
+
+-- At most one open alert per vehicle and maintenance task
+CREATE UNIQUE INDEX UX_MaintenanceLogs_one_open_alert
+    ON dbo.MaintenanceLogs (vehicle_id, schedule_id)
+    WHERE resolved = 0 AND status IN ('Warning', 'Replace', 'Overdue');
 GO

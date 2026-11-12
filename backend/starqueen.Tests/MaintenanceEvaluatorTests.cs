@@ -25,7 +25,9 @@ public class MaintenanceEvaluatorTests
     static (int Org, int Vehicle, int Driver) NewTruck()
     {
         var org = RlsTests.CreateOrg("Truck");
-        return (org.OrgId, RlsTests.AddVehicle(org.OrgId), AddDriver(org.OrgId));
+        int vehicle = RlsTests.AddVehicle(org.OrgId), driver = AddDriver(org.OrgId);
+        AddReading(org.OrgId, vehicle, driver, 0, DateTime.UtcNow.AddDays(-1));   // starting reading
+        return (org.OrgId, vehicle, driver);
     }
 
     static int Count(int org, string sql, object param)
@@ -81,5 +83,25 @@ public class MaintenanceEvaluatorTests
         AddReading(t.Org, t.Vehicle, t.Driver, 1000);
         Assert.Equal(0, EvaluatorFor(t.Org).Evaluate(t.Vehicle));
         Assert.Equal(0, Count(t.Org, "SELECT COUNT(*) FROM dbo.Notifications WHERE vehicle_id = @v", new { v = t.Vehicle }));
+    }
+
+    [Fact]
+    public void ConcurrentEvaluate_CreatesOneAlertSetWithoutErrors()
+    {
+        for (int round = 0; round < 4; round++)
+        {
+            var t = NewTruck();
+            AddReading(t.Org, t.Vehicle, t.Driver, 16000);   // 4 alerts due
+
+            var errors = new System.Collections.Concurrent.ConcurrentBag<Exception>();
+            Parallel.For(0, 8, new ParallelOptions { MaxDegreeOfParallelism = 8 }, _ =>
+            {
+                try { EvaluatorFor(t.Org).Evaluate(t.Vehicle); }
+                catch (Exception ex) { errors.Add(ex); }
+            });
+
+            Assert.Empty(errors);
+            Assert.Equal(4, Count(t.Org, "SELECT COUNT(*) FROM dbo.MaintenanceLogs WHERE vehicle_id = @v AND resolved = 0", new { v = t.Vehicle }));
+        }
     }
 }

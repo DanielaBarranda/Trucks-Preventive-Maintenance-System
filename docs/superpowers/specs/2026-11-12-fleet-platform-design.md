@@ -85,8 +85,10 @@ return the same information, all covered by Row-Level Security:
   against absolute readings, so a vehicle stayed "overdue" forever after its first
   service.
 - Last service = the latest `MaintenanceLogs` row with status `Done` for that vehicle
-  and schedule (its reading and date). With no service yet: reading 0 and the
-  vehicle's `created_at`.
+  and schedule (its reading and date). With no service yet: the vehicle's **first
+  recorded odometer reading** and the vehicle's `created_at` (so a used vehicle added
+  at 150,000 km is not overdue on day one). A service recorded without a reading uses
+  the latest reading on or before the service date.
 - Distance status: `Overdue` if distance ≥ km_overdue, else `Replace` if ≥ km_replace,
   else `Warning` if ≥ km_warning, else `Good`. With no odometer reading: `No Data`.
 - Month status (when `month_interval` is set): whole months since last service ≥
@@ -98,6 +100,8 @@ return the same information, all covered by Row-Level Security:
   expense categories.
 - Template thresholds are stored in km; when an organization uses miles, sign-up
   converts them (× 0.621371, rounded to the nearest 100).
+- The distance unit can only be changed before any odometer readings exist; changing
+  it converts the organization's schedule thresholds the same way.
 
 ### 3.3 Tenant isolation (Row-Level Security)
 

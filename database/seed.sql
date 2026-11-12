@@ -56,6 +56,7 @@ SET @v4 = SCOPE_IDENTITY();
 
 -- Odometer readings. Isuzu at 16,000 km: oil change Warning, tire check Overdue.
 INSERT dbo.OdometerReadings (vehicle_id, driver_id, reading, recorded_at) VALUES
+ (@v1, @d1,     0, DATEADD(day, -60, @now)),   -- bought new
  (@v1, @d1, 12000, DATEADD(day, -30, @now)),
  (@v1, @d1, 16000, DATEADD(day,  -2, @now)),
  (@v2, @d2,  8000, DATEADD(day,  -5, @now)),

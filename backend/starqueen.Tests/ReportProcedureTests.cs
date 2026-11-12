@@ -12,7 +12,9 @@ public class ReportProcedureTests
     (int Org, int Vehicle, int Driver) NewTruck()
     {
         var org = RlsTests.CreateOrg("Truck");
-        return (org.OrgId, RlsTests.AddVehicle(org.OrgId), AddDriver(org.OrgId));
+        int vehicle = RlsTests.AddVehicle(org.OrgId), driver = AddDriver(org.OrgId);
+        AddReading(org.OrgId, vehicle, driver, 0, DateTime.UtcNow.AddDays(-1));   // starting reading
+        return (org.OrgId, vehicle, driver);
     }
 
     [Fact]
@@ -67,7 +69,8 @@ public class ReportProcedureTests
     [Fact]
     public void Status_NoData_WhenNoReadingAndNoInterval()
     {
-        var t = NewTruck();
+        var org = RlsTests.CreateOrg("Truck");   // no readings at all
+        var t = (Org: org.OrgId, Vehicle: RlsTests.AddVehicle(org.OrgId));
         using (var c = OpenAs(t.Org))
             c.Execute("""
                 INSERT dbo.MaintenanceSchedules (vehicle_type_id, task, km_warning, km_replace, km_overdue, month_interval)
@@ -107,5 +110,16 @@ public class ReportProcedureTests
         Assert.Empty(c.Query("EXEC dbo.rpt_MonthlyExpenses"));
         Assert.DoesNotContain(c.Query("EXEC dbo.rpt_MaintenanceStatus"), r => (int)r.vehicle_id == b.Vehicle);
         Assert.DoesNotContain(c.Query("EXEC dbo.rpt_DriverActivity"), r => (int)r.driver_id == b.Driver);
+    }
+
+    [Fact]
+    public void Status_NoService_MeasuredFromFirstReading()
+    {
+        // A used truck joins the fleet at 150,000 km: not "overdue" on day one
+        var org = RlsTests.CreateOrg("Truck");
+        int vehicle = RlsTests.AddVehicle(org.OrgId), driver = AddDriver(org.OrgId);
+        AddReading(org.OrgId, vehicle, driver, 150000, DateTime.UtcNow.AddDays(-2));
+        AddReading(org.OrgId, vehicle, driver, 151000);
+        Assert.Equal("Good", Status(org.OrgId, vehicle, EngineOil));
     }
 }

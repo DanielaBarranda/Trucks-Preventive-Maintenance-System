@@ -24,7 +24,7 @@ namespace starqueen.Repositories
         // NotFound = unknown vehicle or schedule; Invalid = schedule is for another vehicle type.
         public WriteResult RecordService(int vehicleId, int scheduleId, DateTime serviceDate, int? reading, int createdBy)
         {
-            using var scope = new TransactionScope();
+            using var scope = DbTransactions.ReadCommitted();
             using var c = _db.CreateConnection();
 
             var match = c.QuerySingleOrDefault<(int VehicleType, int? ScheduleType)>("""
@@ -34,6 +34,18 @@ namespace starqueen.Repositories
                 """, new { vehicleId, scheduleId });
             if (match == default || match.ScheduleType is null) return WriteResult.NotFound;
             if (match.VehicleType != match.ScheduleType) return WriteResult.Invalid;
+
+            DbTransactions.LockVehicle(c, vehicleId);
+
+            // No reading given: use the latest reading on or before the service date (else the first
+            // reading after it), so the distance counter actually resets.
+            reading ??= c.QuerySingleOrDefault<int?>("""
+                SELECT TOP 1 reading FROM dbo.OdometerReadings
+                WHERE vehicle_id = @vehicleId
+                ORDER BY CASE WHEN recorded_at < DATEADD(day, 1, CAST(@serviceDate AS date)) THEN 0 ELSE 1 END,
+                         CASE WHEN recorded_at < DATEADD(day, 1, CAST(@serviceDate AS date)) THEN recorded_at END DESC,
+                         recorded_at ASC
+                """, new { vehicleId, serviceDate });
 
             c.Execute("""
                 INSERT dbo.MaintenanceLogs (vehicle_id, schedule_id, status, reading_at_log, resolved, resolved_at, created_by)

@@ -26,12 +26,37 @@ namespace starqueen.Repositories
             return c.QuerySingleOrDefault<Organization>($"SELECT {Columns} FROM dbo.Organizations");
         }
 
-        public bool Update(string name, string currencyCode, string distanceUnit)
+        // Changing the distance unit is only allowed before any odometer readings exist
+        // (readings can't be converted reliably); schedule thresholds are converted with it.
+        // Conflict = readings exist; NotFound = no organization in context.
+        public WriteResult Update(string name, string currencyCode, string distanceUnit)
         {
+            using var scope = DbTransactions.ReadCommitted();
             using var c = _db.CreateConnection();
-            return c.Execute(
+
+            string? current = c.QuerySingleOrDefault<string>("SELECT distance_unit FROM dbo.Organizations");
+            if (current == null) return WriteResult.NotFound;
+
+            if (current != distanceUnit)
+            {
+                if (c.ExecuteScalar<int>("SELECT COUNT(*) FROM dbo.OdometerReadings") > 0)
+                    return WriteResult.Conflict;
+
+                // km → mi: × 0.621371;  mi → km: ÷ 0.621371  (rounded to the nearest 100)
+                double factor = distanceUnit == "mi" ? 0.621371 : 1 / 0.621371;
+                c.Execute("""
+                    UPDATE dbo.MaintenanceSchedules SET
+                        km_warning = CAST(ROUND(km_warning * @factor, -2) AS INT),
+                        km_replace = CAST(ROUND(km_replace * @factor, -2) AS INT),
+                        km_overdue = CAST(ROUND(km_overdue * @factor, -2) AS INT)
+                    """, new { factor });
+            }
+
+            c.Execute(
                 "UPDATE dbo.Organizations SET name = @name, currency_code = @currencyCode, distance_unit = @distanceUnit",
-                new { name, currencyCode, distanceUnit }) == 1;
+                new { name, currencyCode, distanceUnit });
+            scope.Complete();
+            return WriteResult.Ok;
         }
 
         // Sign-up: creates the organization, its Owner, vehicle types and schedules.

@@ -117,6 +117,7 @@ public class VehicleTests(ApiFactory api)
         int org = await OrgIdOf(owner);
         int schedule = ScheduleId(org, "Engine Oil & Filter Replacement");
 
+        AddReading(org, vehicle, driver, 0, DateTime.UtcNow.AddDays(-1));   // starting reading
         AddReading(org, vehicle, driver, 19001);   // Overdue
         int logId;
         using (var c = OpenAs(org))
@@ -180,4 +181,24 @@ public class VehicleTests(ApiFactory api)
 
     static async Task<int> OrgIdOf(HttpClient client) =>
         (await (await client.GetAsync("/api/organization")).Json()).GetProperty("id").GetInt32();
+
+    [Fact]
+    public async Task RecordService_WithoutReading_UsesLatestReading()
+    {
+        var owner = await api.SignupNewOrg();
+        int vehicle = await CreateVehicle(owner, "NRD-001");
+        int driver = await CreateDriver(owner);
+        int org = await OrgIdOf(owner);
+        AddReading(org, vehicle, driver, 0, DateTime.UtcNow.AddDays(-30));
+        AddReading(org, vehicle, driver, 50000, DateTime.UtcNow.AddDays(-1));
+        Assert.Equal("Overdue", Status(org, vehicle, "Engine Oil & Filter Replacement"));
+
+        var res = await owner.PostAsJsonAsync($"/api/vehicles/{vehicle}/services", new
+        {
+            schedule_id = ScheduleId(org, "Engine Oil & Filter Replacement"),
+            service_date = DateTime.UtcNow.ToString("yyyy-MM-dd")   // no reading given
+        });
+        Assert.Equal(HttpStatusCode.Created, res.StatusCode);
+        Assert.Equal("Good", Status(org, vehicle, "Engine Oil & Filter Replacement"));
+    }
 }
