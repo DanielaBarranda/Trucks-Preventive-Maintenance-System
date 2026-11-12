@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { GuestOnly, Permissions, RequireAuth, RequirePermission } from './auth/guards';
 import { SessionProvider } from './auth/SessionProvider';
 import { Dashboard } from './pages/admin/Dashboard';
-import { Placeholder } from './pages/Placeholder';
+import { Home } from './pages/driver/Home';
 import { ChangePassword } from './pages/public/ChangePassword';
 import { Landing } from './pages/public/Landing';
 import { Login } from './pages/public/Login';
@@ -34,7 +34,7 @@ export function AppRoutes() {
           element={
             <RequireAuth>
               <RequirePermission permission={Permissions.LogsSubmit}>
-                <Placeholder testId="page-driver-home" title="Driver home" />
+                <Home />
               </RequirePermission>
             </RequireAuth>
           }
