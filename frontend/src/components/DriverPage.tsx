@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getMyVehicle } from '../api/fleet';
 import type { Vehicle } from '../api/types';
 import { DriverLayout } from '../layouts/DriverLayout';
@@ -48,4 +48,16 @@ export function useMyVehicleGate(): { vehicle: Vehicle | null; gate: ReactNode |
   if (query.error) return { vehicle: null, gate: <RetryAlert message={query.error.message} onRetry={() => void query.refetch()} /> };
   if (!query.data) return { vehicle: null, gate: <NoVehicleCard /> };
   return { vehicle: query.data, gate: null };
+}
+
+// A one-time success message passed by the page that just saved something
+// (navigate('/driver', { state: { notice } })). Cleared from history so a refresh doesn't repeat it.
+export function useNotice(): string | null {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [notice] = useState<string | null>(() => (location.state as { notice?: string } | null)?.notice ?? null);
+  useEffect(() => {
+    if ((location.state as { notice?: string } | null)?.notice) navigate(location.pathname, { replace: true, state: null });
+  }, [location, navigate]);
+  return notice;
 }

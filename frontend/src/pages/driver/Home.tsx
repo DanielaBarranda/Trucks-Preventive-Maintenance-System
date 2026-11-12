@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { evaluateMaintenance, getMaintenanceStatus, getMyVehicle } from '../../api/fleet';
 import { useSession } from '../../auth/SessionProvider';
-import { NoVehicleCard } from '../../components/DriverPage';
+import { NoVehicleCard, useNotice } from '../../components/DriverPage';
 import { Alert, buttonClass, cx, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
 import { DriverLayout } from '../../layouts/DriverLayout';
 import { firstName, formatDistance } from '../../lib/format';
@@ -93,18 +92,6 @@ export function Home() {
       </div>
     </DriverLayout>
   );
-}
-
-// A one-time success message passed by the page that just saved something
-// (navigate('/driver', { state: { notice } })). Cleared from history so a refresh doesn't repeat it.
-function useNotice(): string | null {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [notice] = useState<string | null>(() => (location.state as { notice?: string } | null)?.notice ?? null);
-  useEffect(() => {
-    if ((location.state as { notice?: string } | null)?.notice) navigate(location.pathname, { replace: true, state: null });
-  }, [location, navigate]);
-  return notice;
 }
 
 const DUE_STYLES = {
