@@ -13,12 +13,14 @@ export class ApiError extends Error {
 
 let onUnauthorized: () => void = () => {};
 
-// Called on any 401 (session expired or revoked), except failed login/sign-up attempts
+// Called on any 401 (session expired or revoked), except login/sign-up attempts and the
+// startup session check
 export function setUnauthorizedHandler(handler: () => void) {
   onUnauthorized = handler;
 }
 
-const AUTH_ATTEMPT_PATHS = ['/api/auth/login', '/api/auth/signup'];
+// Not "session lost": failed login/sign-up attempts, and the startup "who am I" check
+const AUTH_ATTEMPT_PATHS = ['/api/auth/login', '/api/auth/signup', '/api/auth/me'];
 
 export type ApiInit = RequestInit & { json?: unknown };
 

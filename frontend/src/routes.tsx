@@ -2,17 +2,21 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { GuestOnly, Permissions, RequireAuth, RequirePermission } from './auth/guards';
 import { SessionProvider } from './auth/SessionProvider';
 import { Placeholder } from './pages/Placeholder';
+import { ChangePassword } from './pages/public/ChangePassword';
+import { Landing } from './pages/public/Landing';
+import { Login } from './pages/public/Login';
+import { Signup } from './pages/public/Signup';
 
 export function AppRoutes() {
   return (
     <SessionProvider>
       <Routes>
-        <Route path="/" element={<Placeholder testId="page-landing" title="FleetPMTS" />} />
-        <Route path="/login" element={<GuestOnly><Placeholder testId="page-login" title="Log in" /></GuestOnly>} />
-        <Route path="/signup" element={<GuestOnly><Placeholder testId="page-signup" title="Sign up" /></GuestOnly>} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
+        <Route path="/signup" element={<GuestOnly><Signup /></GuestOnly>} />
         <Route
           path="/change-password"
-          element={<RequireAuth><Placeholder testId="page-change-password" title="Change password" /></RequireAuth>}
+          element={<RequireAuth><ChangePassword /></RequireAuth>}
         />
         <Route
           path="/admin"

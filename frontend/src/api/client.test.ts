@@ -44,6 +44,14 @@ it('apiFetch calls unauthorized handler on 401', async () => {
   expect(handler).toHaveBeenCalledTimes(1);   // not for login attempts
 });
 
+it('startup session check (401 from /api/auth/me) does not trigger the unauthorized handler', async () => {
+  const handler = vi.fn();
+  setUnauthorizedHandler(handler);
+  mockFetch({ 'GET /api/auth/me': () => ({ status: 401 }) });
+  await expect(apiFetch('/api/auth/me')).rejects.toBeInstanceOf(ApiError);
+  expect(handler).not.toHaveBeenCalled();   // "not logged in" is normal, not an expired session
+});
+
 it('network failure becomes ApiError status 0', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
   const error = await apiFetch<never>('/api/vehicles').catch((e: ApiError) => e);
