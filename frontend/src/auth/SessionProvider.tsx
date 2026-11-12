@@ -2,18 +2,20 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as auth from '../api/auth';
-import { setUnauthorizedHandler } from '../api/client';
+import { ApiError, setUnauthorizedHandler } from '../api/client';
 import type { Session } from '../api/types';
 
-type Status = 'loading' | 'anonymous' | 'authenticated';
+// 'error' = the session couldn't be checked (server unreachable / 5xx); the cookie may still be valid
+type Status = 'loading' | 'anonymous' | 'authenticated' | 'error';
 
 interface SessionContextValue {
   status: Status;
   session: Session | null;
+  error: string | null;
   login(email: string, password: string): Promise<Session>;
   signup(input: auth.SignupInput): Promise<Session>;
   logout(): Promise<void>;
-  refresh(): Promise<void>;
+  refresh(): Promise<Session | null>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -23,11 +25,13 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<Status>('loading');
+  const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const signedIn = useCallback((s: Session) => {
     setSession(s);
+    setError(null);
     setStatus('authenticated');
     return s;
   }, []);
@@ -38,11 +42,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
-  const refresh = useCallback(async () => {
+  // Only a 401 means "not logged in". Anything else (no connection, server error) keeps
+  // the user where they are and offers a retry instead of dropping them to the login page.
+  // Returns the fresh session, or null when not logged in / not reachable.
+  const refresh = useCallback(async (): Promise<Session | null> => {
+    setStatus((current) => (current === 'authenticated' ? current : 'loading'));
     try {
-      signedIn(await auth.getMe());
-    } catch {
-      signedOut();
+      return signedIn(await auth.getMe());
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        signedOut();
+      } else {
+        setError(e instanceof ApiError && e.status !== 0 ? `${e.message} (server error)` : "Can't reach the server.");
+        setStatus('error');
+      }
+      return null;
     }
   }, [signedIn, signedOut]);
 
@@ -63,15 +77,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     () => ({
       status,
       session,
+      error,
       login: async (email, password) => signedIn(await auth.login(email, password)),
       signup: async (input) => signedIn(await auth.signup(input)),
+      // If the server can't be reached the login cookie stays valid, so say so instead of
+      // pretending to be logged out (matters on shared devices)
       logout: async () => {
-        await auth.logout().catch(() => {});
+        try {
+          await auth.logout();
+        } catch (e) {
+          if (!(e instanceof ApiError && e.status === 401))
+            throw new Error("Couldn't log out. Check your connection and try again.");
+        }
         signedOut();
       },
       refresh,
     }),
-    [status, session, signedIn, signedOut, refresh],
+    [status, session, error, signedIn, signedOut, refresh],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

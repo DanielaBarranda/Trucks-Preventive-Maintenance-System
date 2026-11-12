@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import type { Session } from '../api/types';
+import { RetryAlert } from '../components/ui';
 import { useSession } from './SessionProvider';
 
 export const Permissions = {
@@ -29,12 +30,25 @@ function FullPageSpinner() {
   );
 }
 
+// Session couldn't be checked (no connection / server error): offer a retry
+function SessionUnavailable() {
+  const { error, refresh } = useSession();
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <RetryAlert message={error ?? "Can't reach the server."} onRetry={() => void refresh()} />
+      </div>
+    </div>
+  );
+}
+
 // Logged-in users only; temporary-password users must change it first
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { status, session } = useSession();
   const location = useLocation();
 
   if (status === 'loading') return <FullPageSpinner />;
+  if (status === 'error') return <SessionUnavailable />;
   if (!session) return <Navigate to="/login" replace />;
   if (session.user.must_change_password && location.pathname !== '/change-password')
     return <Navigate to="/change-password" replace />;
@@ -53,6 +67,7 @@ export function RequirePermission({ permission, children }: { permission: string
 export function GuestOnly({ children }: { children: ReactNode }) {
   const { status, session } = useSession();
   if (status === 'loading') return <FullPageSpinner />;
+  if (status === 'error') return <SessionUnavailable />;
   if (session) return <Navigate to={homePathFor(session)} replace />;
   return <>{children}</>;
 }

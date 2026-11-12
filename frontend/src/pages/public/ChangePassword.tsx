@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { changePassword, getMe } from '../../api/auth';
+import { changePassword } from '../../api/auth';
 import { homePathFor } from '../../auth/guards';
 import { useSession } from '../../auth/SessionProvider';
 import { Alert, Button, Field, Input } from '../../components/ui';
@@ -29,8 +29,8 @@ export function ChangePassword() {
     setServerError(null);
     try {
       await changePassword(current_password, new_password);
-      await refresh();
-      navigate(homePathFor(await getMe()), { replace: true });
+      const updated = await refresh();   // null → the session screen shows the reason (e.g. retry)
+      if (updated) navigate(homePathFor(updated), { replace: true });
     } catch (e) {
       setServerError(e instanceof Error ? e.message : 'Could not change the password.');
     }
@@ -57,7 +57,7 @@ export function ChangePassword() {
         </form>
         <button
           type="button"
-          onClick={() => logout().then(() => navigate('/login', { replace: true }))}
+          onClick={() => logout().then(() => navigate('/login', { replace: true }), (e: Error) => setServerError(e.message))}
           className="mt-4 w-full text-center text-sm text-slate-500 hover:text-slate-700"
         >
           Log out

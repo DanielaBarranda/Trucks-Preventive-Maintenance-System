@@ -124,6 +124,18 @@ export function Alert({ tone = 'info', children }: { tone?: keyof typeof alertSt
   );
 }
 
+// Error message with a Retry button (server unreachable, 5xx, failed section)
+export function RetryAlert({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+      <span>{message}</span>
+      <button type="button" onClick={onRetry} className="rounded-md bg-white px-3 py-1 font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-100">
+        Retry
+      </button>
+    </div>
+  );
+}
+
 export function Spinner({ small = false }: { small?: boolean }) {
   return (
     <span

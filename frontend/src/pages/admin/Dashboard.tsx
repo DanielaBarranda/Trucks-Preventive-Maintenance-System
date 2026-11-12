@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { evaluateMaintenance, getFleetOverview, getMaintenanceStatus, getMonthlyExpenses, getNotifications } from '../../api/fleet';
 import type { MaintenanceStatusRow } from '../../api/types';
 import { useSession } from '../../auth/SessionProvider';
-import { Alert, Button, Card, Spinner, StatusBadge } from '../../components/ui';
+import { Card, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
 import { AdminLayout } from '../../layouts/AdminLayout';
 import { firstName, formatMoney, greeting, timeAgo } from '../../lib/format';
 
@@ -48,12 +48,7 @@ export function Dashboard() {
         </div>
 
         {error ? (
-          <Alert tone="error">
-            {error.message}{' '}
-            <Button variant="ghost" className="ml-2 px-2 py-1" onClick={() => { void fleet.refetch(); void statuses.refetch(); }}>
-              Retry
-            </Button>
-          </Alert>
+          <RetryAlert message={error.message} onRetry={() => { void fleet.refetch(); void statuses.refetch(); }} />
         ) : loading ? (
           <div className="flex justify-center py-16"><Spinner /></div>
         ) : (
@@ -62,7 +57,12 @@ export function Dashboard() {
               <Tile testId="tile-vehicles" label="Vehicles" value={fleet.data?.length ?? 0} />
               <Tile testId="tile-overdue" label="Overdue" value={rows.filter((r) => r.status === 'Overdue' || r.status === 'Replace').length} tone="text-red-600" />
               <Tile testId="tile-due-soon" label="Due soon" value={rows.filter((r) => r.status === 'Warning').length} tone="text-amber-600" />
-              <Tile testId="tile-spent" label="Spent this month" value={formatMoney(spent, currency)} />
+              <Tile
+                testId="tile-spent"
+                label="Spent this month"
+                value={expenses.isError ? '—' : expenses.isPending ? '…' : formatMoney(spent, currency)}
+                hint={expenses.isError ? "Couldn't load expenses" : undefined}
+              />
             </div>
 
             {fleet.data?.length === 0 ? (
@@ -86,6 +86,8 @@ export function Dashboard() {
                   <h2 className="font-semibold text-slate-900">Latest alerts</h2>
                   {alerts.isPending ? (
                     <div className="py-4"><Spinner small /></div>
+                  ) : alerts.isError ? (
+                    <div className="mt-3"><RetryAlert message={alerts.error.message} onRetry={() => void alerts.refetch()} /></div>
                   ) : (alerts.data ?? []).length === 0 ? (
                     <p className="mt-3 text-sm text-slate-500">No unread alerts.</p>
                   ) : (
@@ -108,12 +110,13 @@ export function Dashboard() {
   );
 }
 
-function Tile({ testId, label, value, tone }: { testId: string; label: string; value: ReactNode; tone?: string }) {
+function Tile({ testId, label, value, tone, hint }: { testId: string; label: string; value: ReactNode; tone?: string; hint?: string }) {
   return (
     <Card>
       <div data-testid={testId}>
         <p className="text-sm text-slate-500">{label}</p>
         <p className={`mt-1 text-2xl font-bold ${tone ?? 'text-slate-900'}`}>{value}</p>
+        {hint && <p className="text-xs text-red-600">{hint}</p>}
       </div>
     </Card>
   );

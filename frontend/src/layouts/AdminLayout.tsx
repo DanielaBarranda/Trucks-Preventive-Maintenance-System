@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { can, Permissions } from '../auth/guards';
 import { useSession } from '../auth/SessionProvider';
-import { Badge, Logo } from '../components/ui';
+import { Alert, Badge, Logo } from '../components/ui';
 
 type NavItem = { label: string; to?: string; permission?: string };
 
@@ -23,11 +23,17 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const { session, logout } = useSession();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
   const items = NAV.filter((i) => !i.permission || can(session, i.permission));
 
   const onLogout = async () => {
-    await logout();
-    navigate('/', { replace: true });
+    setLogoutError(null);
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch (e) {
+      setLogoutError(e instanceof Error ? e.message : "Couldn't log out.");
+    }
   };
 
   const sidebar = (
@@ -92,7 +98,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       {/* Desktop: fixed sidebar */}
       <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white md:block">{sidebar}</aside>
 
-      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        {logoutError && <div className="mx-auto mb-4 max-w-6xl"><Alert tone="error">{logoutError}</Alert></div>}
+        {children}
+      </main>
     </div>
   );
 }

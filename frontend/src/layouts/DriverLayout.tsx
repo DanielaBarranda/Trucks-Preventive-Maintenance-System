@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
-import { Logo } from '../components/ui';
+import { Alert, Logo } from '../components/ui';
 
 const TABS = [
   { label: 'Home', icon: '⌂', active: true },
@@ -14,6 +14,15 @@ const TABS = [
 export function DriverLayout({ children }: { children: ReactNode }) {
   const { session, logout } = useSession();
   const navigate = useNavigate();
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  const onLogout = () => {
+    setLogoutError(null);
+    logout().then(
+      () => navigate('/', { replace: true }),
+      (e: Error) => setLogoutError(e.message),
+    );
+  };
 
   return (
     <div className="flex min-h-screen justify-center bg-slate-100">
@@ -25,14 +34,17 @@ export function DriverLayout({ children }: { children: ReactNode }) {
           </div>
           <button
             type="button"
-            onClick={() => logout().then(() => navigate('/', { replace: true }))}
+            onClick={onLogout}
             className="text-sm font-semibold text-blue-700 hover:text-blue-800"
           >
             Log out
           </button>
         </header>
 
-        <main className="flex-1 px-4 py-5">{children}</main>
+        <main className="flex-1 px-4 py-5">
+          {logoutError && <div className="mb-4"><Alert tone="error">{logoutError}</Alert></div>}
+          {children}
+        </main>
 
         <nav aria-label="Driver" className="sticky bottom-0 grid grid-cols-4 border-t border-slate-200 bg-white">
           {TABS.map((t) => (

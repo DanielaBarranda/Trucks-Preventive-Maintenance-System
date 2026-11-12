@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { evaluateMaintenance, getMaintenanceStatus, getMyVehicle } from '../../api/fleet';
 import { useSession } from '../../auth/SessionProvider';
-import { Alert, Button, Card, Spinner } from '../../components/ui';
+import { Button, Card, RetryAlert, Spinner } from '../../components/ui';
 import { DriverLayout } from '../../layouts/DriverLayout';
 import { firstName, formatDistance } from '../../lib/format';
 
@@ -43,7 +43,7 @@ export function Home() {
         {vehicle.isPending ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : vehicle.error ? (
-          <Alert tone="error">{vehicle.error.message}</Alert>
+          <RetryAlert message={vehicle.error.message} onRetry={() => void vehicle.refetch()} />
         ) : !vehicle.data ? (
           <Card className="text-center">
             <p className="font-semibold text-slate-800">No vehicle assigned yet.</p>
@@ -61,7 +61,7 @@ export function Home() {
             {statuses.isPending ? (
               <div className="flex justify-center py-4"><Spinner small /></div>
             ) : statuses.error ? (
-              <Alert tone="error">{statuses.error.message}</Alert>
+              <RetryAlert message={statuses.error.message} onRetry={() => void statuses.refetch()} />
             ) : (
               <DueCard tone={tone} tasks={due.map((d) => `${d.task} (${d.status.toLowerCase()})`)} />
             )}
