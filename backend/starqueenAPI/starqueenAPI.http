@@ -1,14 +1,42 @@
-@starqueenAPI_HostAddress = https://localhost:7273
+@host = https://localhost:7273
 
-# Most endpoints need a login cookie. Log in first, then call the others.
-POST {{starqueenAPI_HostAddress}}/api/auth/login
+# Demo accounts (password Demo1234!) are listed in the README.
+# Log in first: the cookie from the login response is reused by the requests below.
+
+### Log in as the Northwind owner
+POST {{host}}/api/auth/login
 Content-Type: application/json
 
-{ "email": "admin@example.com", "password": "your-password" }
+{ "email": "owner@northwind.demo", "password": "Demo1234!" }
 
-###
+### Who am I (user, organization, permissions)
+GET {{host}}/api/auth/me
 
-GET {{starqueenAPI_HostAddress}}/api/trucks
-Accept: application/json
+### Vehicles
+GET {{host}}/api/vehicles
 
-###
+### Re-check maintenance and raise alerts
+POST {{host}}/api/maintenance/evaluate
+
+### Maintenance status for every vehicle
+GET {{host}}/api/maintenance/status
+
+### Unread alerts
+GET {{host}}/api/notifications?unread_only=true
+
+### Fleet overview report
+GET {{host}}/api/reports/fleet-overview
+
+### Sign up a new organization
+POST {{host}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "organization_name": "My Fleet Co",
+  "owner_name": "Jane Owner",
+  "email": "jane@example.com",
+  "password": "ChangeMe123",
+  "currency_code": "PHP",
+  "distance_unit": "km",
+  "template_categories": ["Truck", "Van & Car"]
+}
