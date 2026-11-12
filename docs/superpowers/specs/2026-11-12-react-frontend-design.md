@@ -17,12 +17,13 @@ desktop and phone widths.
 
 ## 2. Look and feel (approved)
 
-**Style A — clean professional:** light background (`slate-100`), white cards with thin
-borders, one blue accent (`blue-700`) for primary actions and the active menu item.
-Red / amber / green appear **only** for maintenance status (Overdue / Warning / Good).
-Charts use soft blues plus a small set of muted extra colors. System font stack.
-The approved mockups (landing, login, admin dashboard, driver home, add expense) are the
-reference layouts.
+**Clean, modern minimal (replaced Style A after Milestone A):** warm neutral background
+(`stone-50`), white surfaces with hairline `stone-200` borders, near-black text (`ink`).
+One cobalt accent (`accent-600` #2F4FE0) for primary actions, focus, selection and the
+active menu item or tab. Red / amber / green appear **only** for maintenance status
+(Overdue / Warning / Good). Fonts: Inter for text, Inter Tight for headings and numbers
+(tabular). Icons are inline SVG line icons. The approved mockups (landing, login, admin
+dashboard, driver home, add expense) are the reference layouts.
 
 ## 3. Stack
 

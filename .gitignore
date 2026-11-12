@@ -28,3 +28,4 @@ backend/starqueenAPI/App_Data/
 frontend/node_modules/
 frontend/dist/
 frontend/*.tsbuildinfo
+frontend/.vite/

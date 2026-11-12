@@ -4,11 +4,12 @@ import { MemoryRouter } from 'react-router-dom';
 import { AppRoutes } from '../routes';
 
 // Renders the whole app (all providers) at a given URL, with a fresh query cache
-export function renderApp(path = '/') {
+// state: router location state, e.g. { notice: 'Reading saved' }
+export function renderApp(path = '/', state?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[path]}>
+      <MemoryRouter initialEntries={[state === undefined ? path : { pathname: path, state }]}>
         <AppRoutes />
       </MemoryRouter>
     </QueryClientProvider>,

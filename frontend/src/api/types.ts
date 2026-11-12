@@ -85,3 +85,45 @@ export interface MonthlyExpenseRow {
   max: number;
   count: number;
 }
+
+export interface OdometerReading {
+  id: number;
+  vehicle_id: number;
+  driver_id: number;
+  reading: number;
+  recorded_at: string;
+}
+
+export interface Trip {
+  id: number;
+  vehicle_id: number;
+  driver_id: number;
+  driver_name: string | null;
+  trip_date: string;            // "YYYY-MM-DDT00:00:00"
+  pickup_location: string;
+  pickup_address: string;
+  destination: string;
+  scheduled_time: string | null; // "HH:mm:ss"
+  departed_at: string | null;
+  arrived_at: string | null;
+}
+
+export interface NewTrip {
+  trip_date: string;            // YYYY-MM-DD
+  pickup_location: string;
+  pickup_address: string;
+  destination: string;
+  scheduled_time?: string;      // HH:mm
+}
+
+export interface Expense {
+  id: number;
+  vehicle_id: number;
+  driver_id: number;
+  schedule_id: number | null;
+  expense_date: string;         // "YYYY-MM-DDT00:00:00"
+  category: string;
+  amount: number;
+  notes: string | null;
+  created_at: string;
+}

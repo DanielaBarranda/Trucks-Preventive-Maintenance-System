@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
 import { Alert, cx, Logo } from '../components/ui';
 
@@ -12,10 +12,10 @@ const ICONS: Record<string, ReactNode> = {
 };
 
 const TABS = [
-  { label: 'Home', active: true },
-  { label: 'Trips' },
-  { label: 'Expenses' },
-  { label: 'Status' },
+  { label: 'Home', to: '/driver', end: true },
+  { label: 'Trips', to: '/driver/trips', end: false },
+  { label: 'Expenses', to: '/driver/expenses', end: false },
+  { label: 'Status', to: '/driver/status', end: false },
 ];
 
 // Phone-first: a single column with a bottom tab bar (centered on desktop)
@@ -49,18 +49,19 @@ export function DriverLayout({ children }: { children: ReactNode }) {
 
         <nav aria-label="Driver" className="sticky bottom-0 grid grid-cols-4 border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
           {TABS.map((t) => (
-            <span
+            <NavLink
               key={t.label}
-              aria-current={t.active ? 'page' : undefined}
-              aria-disabled={t.active ? undefined : true}
-              title={t.active ? undefined : 'Coming soon'}
-              className={cx('flex flex-col items-center gap-1 py-2.5 text-[11px]', t.active ? 'font-medium text-accent-600' : 'text-stone-400')}
+              to={t.to}
+              end={t.end}
+              className={({ isActive }) =>
+                cx('flex min-h-[52px] flex-col items-center justify-center gap-1 py-2 text-[11px] transition-colors',
+                  isActive ? 'font-medium text-accent-600' : 'text-stone-500 hover:text-ink')}
             >
               <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 {ICONS[t.label]}
               </svg>
               {t.label}
-            </span>
+            </NavLink>
           ))}
         </nav>
       </div>

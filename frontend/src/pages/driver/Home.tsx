@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { evaluateMaintenance, getMaintenanceStatus, getMyVehicle } from '../../api/fleet';
 import { useSession } from '../../auth/SessionProvider';
-import { Button, cx, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
+import { NoVehicleCard } from '../../components/DriverPage';
+import { Alert, buttonClass, cx, RetryAlert, Spinner, StatusBadge } from '../../components/ui';
 import { DriverLayout } from '../../layouts/DriverLayout';
 import { firstName, formatDistance } from '../../lib/format';
 
@@ -18,6 +21,7 @@ function currencySymbol(currency: string): string {
 
 export function Home() {
   const { session } = useSession();
+  const notice = useNotice();
   const vehicle = useQuery({ queryKey: ['my-vehicle'], queryFn: getMyVehicle });
   const hasVehicle = !!vehicle.data;
 
@@ -47,15 +51,14 @@ export function Home() {
           <p className="text-sm text-stone-500">{session?.organization.name}</p>
         </div>
 
+        {notice && <Alert tone="success">{notice}</Alert>}
+
         {vehicle.isPending ? (
           <div className="flex justify-center py-12"><Spinner /></div>
         ) : vehicle.error ? (
           <RetryAlert message={vehicle.error.message} onRetry={() => void vehicle.refetch()} />
         ) : !vehicle.data ? (
-          <div className="rounded-2xl border border-dashed border-stone-300 px-6 py-10 text-center">
-            <p className="font-medium text-ink">No vehicle assigned yet.</p>
-            <p className="mt-1 text-sm text-stone-500">Ask your admin to assign one to you.</p>
-          </div>
+          <NoVehicleCard />
         ) : (
           <>
             <section className="rounded-2xl border border-stone-200 bg-white p-5">
@@ -77,20 +80,31 @@ export function Home() {
             )}
 
             <div className="grid gap-2.5 pt-1">
-              <Button disabled className="rounded-xl py-3.5 text-base">+ Log odometer</Button>
+              <Link to="/driver/odometer" className={buttonClass('primary', 'rounded-xl py-3.5 text-base')}>+ Log odometer</Link>
               <div className="grid grid-cols-2 gap-2.5">
-                <Button disabled variant="secondary" className="rounded-xl py-3.5">Start trip</Button>
-                <Button disabled variant="secondary" className="rounded-xl py-3.5">
+                <Link to="/driver/trips/new" className={buttonClass('secondary', 'rounded-xl py-3.5')}>Start trip</Link>
+                <Link to="/driver/expenses/new" className={buttonClass('secondary', 'rounded-xl py-3.5')}>
                   {currencySymbol(session?.organization.currency_code ?? 'PHP')} Add expense
-                </Button>
+                </Link>
               </div>
-              <p className="pt-1 text-center text-xs text-stone-400">Logging readings, trips and expenses is coming soon.</p>
             </div>
           </>
         )}
       </div>
     </DriverLayout>
   );
+}
+
+// A one-time success message passed by the page that just saved something
+// (navigate('/driver', { state: { notice } })). Cleared from history so a refresh doesn't repeat it.
+function useNotice(): string | null {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [notice] = useState<string | null>(() => (location.state as { notice?: string } | null)?.notice ?? null);
+  useEffect(() => {
+    if ((location.state as { notice?: string } | null)?.notice) navigate(location.pathname, { replace: true, state: null });
+  }, [location, navigate]);
+  return notice;
 }
 
 const DUE_STYLES = {

@@ -1,3 +1,5 @@
+import { parseServerTime } from './dates';
+
 export function formatMoney(amount: number, currency: string): string {
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency, minimumFractionDigits: 2 }).format(amount);
@@ -30,8 +32,7 @@ export function statusTone(status: string): Tone {
 
 // "just now", "5 min ago", "3 hours ago", "2 days ago"
 export function timeAgo(iso: string, now: Date = new Date()): string {
-  // API timestamps are UTC without a zone suffix
-  const then = new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
+  const then = parseServerTime(iso);   // API timestamps are UTC without a zone suffix
   const seconds = Math.round((now.getTime() - then.getTime()) / 1000);
   if (seconds < 60) return 'just now';
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });

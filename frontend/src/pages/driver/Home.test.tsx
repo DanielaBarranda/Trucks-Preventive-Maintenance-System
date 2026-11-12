@@ -63,10 +63,3 @@ it('shows no-vehicle message', async () => {
   expect(screen.queryByRole('button', { name: /Log odometer/ })).not.toBeInTheDocument();
 });
 
-it('action buttons are shown as coming soon', async () => {
-  mockFetch(routes());
-  renderApp('/driver');
-  expect(await screen.findByRole('button', { name: /Log odometer/ })).toBeDisabled();
-  expect(screen.getByRole('button', { name: /Start trip/ })).toBeDisabled();
-  expect(screen.getByRole('button', { name: /Add expense/ })).toBeDisabled();
-});
