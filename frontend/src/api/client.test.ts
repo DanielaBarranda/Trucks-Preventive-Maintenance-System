@@ -23,7 +23,7 @@ it('apiFetch sends JSON bodies', async () => {
 
 it('apiFetch throws ApiError with server message', async () => {
   mockFetch({ 'POST /api/drivers': () => ({ status: 409, json: { message: 'Email is already registered.' } }) });
-  const error = await apiFetch('/api/drivers', { method: 'POST', json: {} }).catch((e) => e);
+  const error = await apiFetch<never>('/api/drivers', { method: 'POST', json: {} }).catch((e: ApiError) => e);
   expect(error).toBeInstanceOf(ApiError);
   expect(error.status).toBe(409);
   expect(error.message).toBe('Email is already registered.');
@@ -46,7 +46,7 @@ it('apiFetch calls unauthorized handler on 401', async () => {
 
 it('network failure becomes ApiError status 0', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
-  const error = await apiFetch('/api/vehicles').catch((e) => e);
+  const error = await apiFetch<never>('/api/vehicles').catch((e: ApiError) => e);
   expect(error).toBeInstanceOf(ApiError);
   expect(error.status).toBe(0);
   expect(error.message).toBe("Can't reach the server.");
