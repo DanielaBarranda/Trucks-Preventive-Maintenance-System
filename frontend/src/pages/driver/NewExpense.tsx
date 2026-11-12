@@ -2,19 +2,32 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../../api/client';
-import { createExpense } from '../../api/driver';
+import { createExpense, getExpenses } from '../../api/driver';
 import { getMaintenanceStatus } from '../../api/fleet';
 import { useSession } from '../../auth/SessionProvider';
 import { DriverPage, useMyVehicleGate } from '../../components/DriverPage';
 import { PhotoField } from '../../components/PhotoField';
 import { Alert, Button, cx, Field, Input, Select } from '../../components/ui';
-import { todayLocal } from '../../lib/dates';
+import { dateOnly, parseServerTime, todayLocal } from '../../lib/dates';
 import { currencySymbol } from '../../lib/format';
 
 const CATEGORIES = ['Fuel', 'Maintenance', 'Parts', 'Toll', 'Parking', 'Other'];
 const SEVERITY: Record<string, number> = { Overdue: 0, Replace: 1, Warning: 2, 'No Data': 3, Good: 4 };
 
 type Errors = Partial<Record<'category' | 'other' | 'amount' | 'date' | 'notes' | 'work' | 'receipt', string>>;
+
+// After a lost response, the server may have saved the expense even though the phone
+// saw a failure. Before sending again, look for the same expense saved in the last 10 minutes.
+async function alreadySaved(form: FormData): Promise<boolean> {
+  const recent = await getExpenses();
+  const scheduleId = form.get('schedule_id');
+  return recent.some((e) =>
+    dateOnly(e.expense_date) === form.get('expense_date') &&
+    e.category === form.get('category') &&
+    Math.abs(e.amount - Number(form.get('amount'))) < 0.005 &&
+    (e.schedule_id == null ? scheduleId === null : String(e.schedule_id) === scheduleId) &&
+    Date.now() - parseServerTime(e.created_at).getTime() < 10 * 60_000);
+}
 
 export function NewExpense() {
   const { gate } = useMyVehicleGate();
@@ -41,8 +54,15 @@ function ExpenseForm() {
   const tasks = [...new Map((statuses.data ?? []).map((r) => [r.schedule_id, r])).values()]
     .sort((a, b) => (SEVERITY[a.status] ?? 9) - (SEVERITY[b.status] ?? 9));
 
+  // True after a "can't reach the server" failure: the upload may still have been saved
+  const [maybeSaved, setMaybeSaved] = useState(false);
+
   const save = useMutation({
-    mutationFn: (form: FormData) => createExpense(form),
+    mutationFn: async (form: FormData) => {
+      if (maybeSaved && (await alreadySaved(form))) return;
+      await createExpense(form);
+    },
+    onError: (e) => setMaybeSaved(e instanceof ApiError && e.status === 0),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['expenses'] });
       if (scheduleId) {

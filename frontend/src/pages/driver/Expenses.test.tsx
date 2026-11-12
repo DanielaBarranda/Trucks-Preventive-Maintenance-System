@@ -156,6 +156,27 @@ describe('new expense', () => {
     expect(posts(spy)).toHaveLength(2);
   });
 
+  it('after a lost response, Save again does not create a duplicate when the first one was saved', async () => {
+    let saved: Expense[] = [];
+    const spy = mockFetch({
+      ...routes(() => {
+        // The server saves it, but the answer never reaches the phone
+        saved = [{ ...expense, id: 9, schedule_id: null, category: 'Fuel', amount: 1250.5,
+          expense_date: `${todayLocal()}T00:00:00`, created_at: new Date().toISOString().slice(0, 19) }];
+        return { networkError: true };
+      }),
+      'GET /api/expenses': () => ({ json: saved }),
+    });
+    renderApp('/driver/expenses/new');
+    await fillValidForm();
+    await userEvent.click(screen.getByRole('button', { name: 'Save expense' }));
+    expect(await screen.findByText('Upload failed. Check your signal and tap Save again.')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save expense' }));
+    expect(await screen.findByText('Expense saved')).toBeInTheDocument();
+    expect(posts(spy)).toHaveLength(1);
+  });
+
   it('shows Uploading… and is disabled while sending', async () => {
     const spy = mockFetch(routes(() => ({ status: 201, json: { id: 5 }, delay: 300 })));
     renderApp('/driver/expenses/new');

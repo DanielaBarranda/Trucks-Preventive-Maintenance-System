@@ -12,7 +12,16 @@ export function fitWithin(width: number, height: number, max = MAX_SIDE): { widt
   return { width: Math.round(width * scale), height: Math.round(height * scale) };
 }
 
-export async function prepareUpload(file: File): Promise<File> {
+// Some Android pickers hand over a photo with no MIME type: go by its name
+function typeFromName(name: string): string {
+  if (/\.jpe?g$/i.test(name)) return 'image/jpeg';
+  if (/\.png$/i.test(name)) return 'image/png';
+  if (/\.hei[cf]$/i.test(name)) return 'image/heic';
+  return '';
+}
+
+export async function prepareUpload(original: File): Promise<File> {
+  const file = original.type ? original : new File([original], original.name, { type: typeFromName(original.name) });
   if (!DECODABLE.includes(file.type)) throw new Error('Use a JPG or PNG photo.');
 
   const resized = await resizeToJpeg(file);

@@ -23,3 +23,10 @@ it('prepareUpload refuses an undecodable original over 10 MB', async () => {
   const big = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'huge.jpg', { type: 'image/jpeg' });
   await expect(prepareUpload(big)).rejects.toThrow('Photo is too big (max 10 MB).');
 });
+
+it('prepareUpload accepts a photo with no MIME type when the name says JPG', async () => {
+  const file = new File([new Uint8Array([0xff, 0xd8, 0xff])], 'IMG_0042.JPG', { type: '' });
+  const result = await prepareUpload(file);
+  expect(result.type).toBe('image/jpeg');
+  expect(result.name).toBe('IMG_0042.JPG');
+});
