@@ -10,8 +10,6 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database columns are snake_case; C# properties are PascalCase
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // ── Tenant context + database ─────────────────────────────────
 // Every connection is scoped to the logged-in user's organization (Row-Level Security).

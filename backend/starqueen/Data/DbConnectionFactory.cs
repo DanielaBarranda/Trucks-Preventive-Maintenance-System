@@ -22,6 +22,10 @@ namespace starqueen.Data
         private readonly string _connectionString;
         private readonly ITenantContext _tenant;
 
+        // Database columns are snake_case, C# properties PascalCase. Set here (not only at API
+        // startup) so every user of this library maps rows the same way.
+        static SqlConnectionFactory() => DefaultTypeMap.MatchNamesWithUnderscores = true;
+
         public SqlConnectionFactory(string? connectionString, ITenantContext tenant)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
