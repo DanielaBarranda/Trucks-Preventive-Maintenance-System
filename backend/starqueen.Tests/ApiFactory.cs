@@ -44,6 +44,43 @@ public class ApiFactory : WebApplicationFactory<Program>
         return client;
     }
 
+    // Owner creates a driver; the driver logs in and changes the temporary password.
+    // Returns the driver's logged-in client and id.
+    public async Task<(HttpClient Client, int Id)> NewDriver(HttpClient manager)
+    {
+        string email = $"{Guid.NewGuid():N}@driver.test";
+        var created = await manager.PostAsJsonAsync("/api/drivers",
+            new { full_name = "Fleet Driver", email, temporary_password = "TempPass123" });
+        created.EnsureSuccessStatusCode();
+        int id = (await created.Json()).GetProperty("id").GetInt32();
+
+        var client = await LoginAs(email, "TempPass123");
+        (await client.PostAsJsonAsync("/api/auth/change-password",
+            new { current_password = "TempPass123", new_password = "DriverPass123" })).EnsureSuccessStatusCode();
+        return (client, id);
+    }
+
+    // Owner creates a vehicle of the first (or named) type and assigns the driver to it
+    public static async Task<int> NewVehicle(HttpClient owner, int? driverId = null, string? typeName = null)
+    {
+        var types = (await (await owner.GetAsync("/api/vehicle-types")).Json()).EnumerateArray().ToList();
+        var type = typeName == null ? types.First() : types.Single(t => t.GetProperty("name").GetString() == typeName);
+        var res = await owner.PostAsJsonAsync("/api/vehicles", new
+        {
+            name = "Test Vehicle",
+            plate_number = "T-" + Guid.NewGuid().ToString("N")[..8],
+            vehicle_type_id = type.GetProperty("id").GetInt32()
+        });
+        res.EnsureSuccessStatusCode();
+        int id = (await res.Json()).GetProperty("id").GetInt32();
+        if (driverId is int d)
+            (await owner.PutAsJsonAsync($"/api/vehicles/{id}/assign", new { driver_id = d })).EnsureSuccessStatusCode();
+        return id;
+    }
+
+    public static async Task<int> OrgIdOf(HttpClient client) =>
+        (await (await client.GetAsync("/api/organization")).Json()).GetProperty("id").GetInt32();
+
     // Returns a client holding the login cookie for this user
     public async Task<HttpClient> LoginAs(string email, string password = SeedTests.DemoPassword)
     {

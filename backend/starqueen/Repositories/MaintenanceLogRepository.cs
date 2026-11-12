@@ -11,6 +11,14 @@ namespace starqueen.Repositories
 
         public MaintenanceLogRepository(IDbConnectionFactory db) => _db = db;
 
+        // Current maintenance status per vehicle × schedule (all vehicles when vehicleId is null)
+        public IEnumerable<MaintenanceStatusRow> Status(int? vehicleId)
+        {
+            using var c = _db.CreateConnection();
+            return c.Query<MaintenanceStatusRow>("EXEC dbo.rpt_MaintenanceStatus @vehicle_id",
+                new { vehicle_id = vehicleId }).ToList();
+        }
+
         // Records that a schedule's maintenance was done on a vehicle, and resolves that
         // schedule's open alerts and their notifications — all or nothing.
         // NotFound = unknown vehicle or schedule; Invalid = schedule is for another vehicle type.

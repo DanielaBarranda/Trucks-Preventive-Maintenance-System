@@ -17,3 +17,6 @@ backend/starqueenAPI/wwwroot/uploads/*
 # OS / editor
 Thumbs.db
 .DS_Store
+
+# Uploaded expense photos (stored per organization, served only through the API)
+backend/starqueenAPI/App_Data/
