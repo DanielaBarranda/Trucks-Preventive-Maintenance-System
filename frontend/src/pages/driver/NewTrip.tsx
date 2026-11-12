@@ -19,7 +19,7 @@ type Values = z.infer<typeof schema>;
 
 export function NewTrip() {
   const { gate } = useMyVehicleGate();
-  return <DriverPage title="New trip" back="/driver/trips">{gate ?? <TripForm />}</DriverPage>;
+  return <DriverPage title="New trip" back="/driver/trips" narrow>{gate ?? <TripForm />}</DriverPage>;
 }
 
 function TripForm() {

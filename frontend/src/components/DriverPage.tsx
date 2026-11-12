@@ -4,13 +4,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getMyVehicle } from '../api/fleet';
 import type { Vehicle } from '../api/types';
 import { DriverLayout } from '../layouts/DriverLayout';
-import { RetryAlert, Spinner } from './ui';
+import { cx, RetryAlert, Spinner } from './ui';
 
-// One driver screen: a title (with an optional back link) inside the driver layout
-export function DriverPage({ title, back, action, children }: { title: string; back?: string; action?: ReactNode; children: ReactNode }) {
+// One driver screen: a title (with an optional back link) inside the driver layout.
+// narrow: forms keep a comfortable width on desktop instead of stretching.
+export function DriverPage({ title, back, action, narrow, children }: {
+  title: string; back?: string; action?: ReactNode; narrow?: boolean; children: ReactNode;
+}) {
   return (
     <DriverLayout>
-      <div className="space-y-5">
+      <div className={cx('space-y-5', narrow && 'lg:mx-auto lg:max-w-xl')}>
         <div>
           {back && (
             <Link to={back} className="-ml-1 mb-2 inline-flex items-center gap-1 rounded-md py-1 pr-2 text-sm text-stone-500 hover:text-ink">

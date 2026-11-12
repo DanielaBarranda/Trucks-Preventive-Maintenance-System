@@ -13,7 +13,7 @@ const CONFIRM_ABOVE = 5000;
 
 export function Odometer() {
   const { gate } = useMyVehicleGate();
-  return <DriverPage title="Log odometer" back="/driver">{gate ?? <ReadingForm />}</DriverPage>;
+  return <DriverPage title="Log odometer" back="/driver" narrow>{gate ?? <ReadingForm />}</DriverPage>;
 }
 
 function ReadingForm() {

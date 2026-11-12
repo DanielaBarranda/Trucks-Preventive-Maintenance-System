@@ -35,6 +35,18 @@ it('tab bar has links to the four driver pages', async () => {
   expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
 });
 
+it('desktop has a side menu with the four pages, the driver and Log out', async () => {
+  mockFetch(routes());
+  renderApp('/driver');
+  const menu = await screen.findByRole('navigation', { name: 'Driver menu' });
+  for (const name of ['Home', 'Trips', 'Expenses', 'Status']) {
+    expect(within(menu).getByRole('link', { name })).toBeInTheDocument();
+  }
+  expect(within(menu).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
+  expect(within(menu).getByText('Ben Cruz')).toBeInTheDocument();
+  expect(within(menu).getByRole('button', { name: 'Log out' })).toBeInTheDocument();
+});
+
 it('clicking Trips opens the trips page and marks the tab', async () => {
   mockFetch(routes());
   renderApp('/driver');

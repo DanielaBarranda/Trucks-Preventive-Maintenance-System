@@ -50,8 +50,9 @@ export function Home() {
         ) : !vehicle.data ? (
           <NoVehicleCard />
         ) : (
-          <>
-            <section className="rounded-2xl border border-stone-200 bg-white p-5">
+          // Phone: vehicle, due tasks, buttons. Desktop: vehicle + buttons left, due tasks right.
+          <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:gap-y-5 lg:space-y-0">
+            <section className="rounded-2xl border border-stone-200 bg-white p-5 lg:col-start-1">
               <p className="text-xs font-medium text-stone-500">Your vehicle</p>
               <p className="mt-1 font-medium text-ink">{vehicle.data.name}</p>
               <p className="text-sm text-stone-500">{vehicle.data.plate_number}</p>
@@ -61,15 +62,17 @@ export function Home() {
               </div>
             </section>
 
-            {statuses.isPending ? (
-              <div className="flex justify-center py-4"><Spinner small /></div>
-            ) : statuses.error ? (
-              <RetryAlert message={statuses.error.message} onRetry={() => void statuses.refetch()} />
-            ) : (
-              <DueCard tone={tone} tasks={due.map((d) => ({ task: d.task, status: d.status }))} />
-            )}
+            <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+              {statuses.isPending ? (
+                <div className="flex justify-center py-4"><Spinner small /></div>
+              ) : statuses.error ? (
+                <RetryAlert message={statuses.error.message} onRetry={() => void statuses.refetch()} />
+              ) : (
+                <DueCard tone={tone} tasks={due.map((d) => ({ task: d.task, status: d.status }))} />
+              )}
+            </div>
 
-            <div className="grid gap-2.5 pt-1">
+            <div className="grid gap-2.5 pt-1 lg:col-start-1 lg:pt-0">
               <Link to="/driver/odometer" className={buttonClass('primary', 'rounded-xl py-3.5 text-base')}>+ Log odometer</Link>
               <div className="grid grid-cols-2 gap-2.5">
                 <Link to="/driver/trips/new" className={buttonClass('secondary', 'rounded-xl py-3.5')}>Start trip</Link>
@@ -78,7 +81,7 @@ export function Home() {
                 </Link>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </DriverLayout>

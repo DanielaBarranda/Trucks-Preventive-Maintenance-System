@@ -31,7 +31,7 @@ async function alreadySaved(form: FormData): Promise<boolean> {
 
 export function NewExpense() {
   const { gate } = useMyVehicleGate();
-  return <DriverPage title="New expense" back="/driver/expenses">{gate ?? <ExpenseForm />}</DriverPage>;
+  return <DriverPage title="New expense" back="/driver/expenses" narrow>{gate ?? <ExpenseForm />}</DriverPage>;
 }
 
 function ExpenseForm() {

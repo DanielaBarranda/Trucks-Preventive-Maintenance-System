@@ -39,7 +39,7 @@ function TripList() {
   const done = trips.data.filter((t) => t.arrived_at);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:grid lg:grid-cols-3 lg:items-start lg:gap-6 lg:space-y-0">
       <Group title="On the road" trips={onRoad} />
       <Group title="Planned" trips={planned} />
       <Group title="Done" trips={done} />
