@@ -128,6 +128,29 @@ namespace starqueen.Repositories
         private readonly IDbConnectionFactory _db;
         public NotificationRepository(IDbConnectionFactory db) => _db = db;
 
+        public IEnumerable<Notification> List(bool unreadOnly)
+        {
+            using var c = _db.CreateConnection();
+            return c.Query<Notification>("""
+                SELECT id, vehicle_id, maintenance_log_id, type, message, task, is_read, is_resolved, resolved_at, created_at
+                FROM dbo.Notifications
+                WHERE @unreadOnly = 0 OR is_read = 0
+                ORDER BY created_at DESC, id DESC
+                """, new { unreadOnly }).ToList();
+        }
+
+        public bool MarkRead(int id)
+        {
+            using var c = _db.CreateConnection();
+            return c.Execute("UPDATE dbo.Notifications SET is_read = 1 WHERE id = @id", new { id }) == 1;
+        }
+
+        public int MarkAllRead()
+        {
+            using var c = _db.CreateConnection();
+            return c.Execute("UPDATE dbo.Notifications SET is_read = 1 WHERE is_read = 0");
+        }
+
         public void AddInformation(int? vehicleId, string message, string? task)
         {
             using var c = _db.CreateConnection();
