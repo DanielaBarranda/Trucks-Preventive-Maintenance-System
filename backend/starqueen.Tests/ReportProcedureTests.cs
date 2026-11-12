@@ -106,6 +106,6 @@ public class ReportProcedureTests
         Assert.Equal(new[] { a.Vehicle }, vehicleIds);
         Assert.Empty(c.Query("EXEC dbo.rpt_MonthlyExpenses"));
         Assert.DoesNotContain(c.Query("EXEC dbo.rpt_MaintenanceStatus"), r => (int)r.vehicle_id == b.Vehicle);
-        Assert.Empty(c.Query("EXEC dbo.rpt_DriverActivity").Where(r => (int)r.driver_id == b.Driver));
+        Assert.DoesNotContain(c.Query("EXEC dbo.rpt_DriverActivity"), r => (int)r.driver_id == b.Driver);
     }
 }
