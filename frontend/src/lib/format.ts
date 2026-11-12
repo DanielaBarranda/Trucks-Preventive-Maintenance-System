@@ -28,6 +28,25 @@ export function statusTone(status: string): Tone {
   }
 }
 
+// "just now", "5 min ago", "3 hours ago", "2 days ago"
+export function timeAgo(iso: string, now: Date = new Date()): string {
+  // API timestamps are UTC without a zone suffix
+  const then = new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
+  const seconds = Math.round((now.getTime() - then.getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return rtf.format(-minutes, 'minute');
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return rtf.format(-hours, 'hour');
+  return rtf.format(-Math.round(hours / 24), 'day');
+}
+
+export function greeting(now: Date = new Date()): string {
+  const h = now.getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
 export function firstName(fullName: string): string {
   return fullName.trim().split(/\s+/)[0] ?? fullName;
 }

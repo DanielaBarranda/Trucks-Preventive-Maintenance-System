@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { GuestOnly, Permissions, RequireAuth, RequirePermission } from './auth/guards';
 import { SessionProvider } from './auth/SessionProvider';
+import { Dashboard } from './pages/admin/Dashboard';
 import { Placeholder } from './pages/Placeholder';
 import { ChangePassword } from './pages/public/ChangePassword';
 import { Landing } from './pages/public/Landing';
@@ -23,7 +24,7 @@ export function AppRoutes() {
           element={
             <RequireAuth>
               <RequirePermission permission={Permissions.ReportsView}>
-                <Placeholder testId="page-admin-dashboard" title="Dashboard" />
+                <Dashboard />
               </RequirePermission>
             </RequireAuth>
           }
