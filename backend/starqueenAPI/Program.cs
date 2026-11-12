@@ -96,12 +96,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ── Front end: serve the web/ folder at the site root ─────────
+// ── Front end: serve the built React app (frontend/dist) at the site root ──
+// Build it with `npm run build` in frontend/. During development use `npm run dev` instead.
 string webRoot = Path.GetFullPath(Path.Combine(
-    app.Environment.ContentRootPath, app.Configuration["FrontEndPath"] ?? "../../web"));
-if (Directory.Exists(webRoot))
+    app.Environment.ContentRootPath, app.Configuration["FrontEndPath"] ?? "../../frontend/dist"));
+PhysicalFileProvider? webFiles = Directory.Exists(webRoot) ? new PhysicalFileProvider(webRoot) : null;
+if (webFiles != null)
 {
-    var webFiles = new PhysicalFileProvider(webRoot);
     app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = webFiles });
     app.UseStaticFiles(new StaticFileOptions { FileProvider = webFiles });
 }
@@ -110,6 +111,15 @@ app.UseAuthentication();
 app.UseMiddleware<PasswordChangeGate>();
 app.UseAuthorization();
 app.MapControllers();
+
+// Client-side routes (/admin, /driver, ...) load index.html; React Router takes it from there.
+// Never for /api/... so unknown API calls still get a proper 401/404, not a web page.
+if (webFiles != null)
+{
+    app.MapFallbackToFile("{*path:nonfile:regex(^(?!api/).*$)}", "index.html", new StaticFileOptions { FileProvider = webFiles })
+       .AllowAnonymous();
+}
+
 app.Run();
 
 // Exposed for integration tests (WebApplicationFactory<Program>)

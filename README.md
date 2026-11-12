@@ -8,7 +8,7 @@ A preventive maintenance and tracking platform for businesses that run vehicles 
 - **Drivers** log odometer readings, trips, and expenses (with photo proof) for the vehicle assigned to them.
 - **Maintenance alerts** are raised automatically when a vehicle is due, by distance or by time **since its last service**.
 
-> **Status:** the backend (database + API) is complete. A new React front end is being built next; until then, use the API through Swagger. The old `web/` pages no longer match the API.
+> **Status:** the backend (database + API) is complete. The new React front end has its first working screens (sign-up, login, admin dashboard, driver home); more screens are in progress. The old `web/` pages are obsolete and will be removed.
 
 ## Features
 
@@ -64,6 +64,19 @@ A preventive maintenance and tracking platform for businesses that run vehicles 
 4. **Open Swagger** at https://localhost:7273/swagger. Call `POST /api/auth/login` first; the login cookie is then sent with every other call. `backend/starqueenAPI/starqueenAPI.http` has ready-made requests too.
 
 The connection string is `ConnectionStrings:DefaultConnection` in `backend/starqueenAPI/appsettings.json`. For any other database, set it with `dotnet user-secrets` or the `ConnectionStrings__DefaultConnection` environment variable. Never commit real credentials.
+
+### Running the front end
+
+**Requirements:** Node.js 20+.
+
+```
+cd frontend
+npm install
+```
+
+- **Development (live reload):** keep the API running, then `npm run dev` and open http://localhost:5173. API calls are forwarded to https://localhost:7273, so the login cookie works.
+- **Single app:** `npm run build` writes `frontend/dist`; the API then serves the whole site at https://localhost:7273 (including direct links like `/admin`).
+- **Checks:** `npm run check` runs the TypeScript compiler and the tests.
 
 ### Demo accounts
 
