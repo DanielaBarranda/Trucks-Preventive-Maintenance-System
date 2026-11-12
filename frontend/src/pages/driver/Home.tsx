@@ -92,18 +92,27 @@ const DUE_STYLES = {
 };
 
 function DueCard({ tone, tasks }: { tone: keyof typeof DUE_STYLES; tasks: { task: string; status: string }[] }) {
+  const seeAll = (
+    <Link to="/driver/status" className="shrink-0 rounded-md py-1 text-sm font-medium text-accent-700 hover:text-accent-800">See all</Link>
+  );
   return (
     <section data-testid="due-card" data-tone={tone} className={cx('rounded-2xl border', DUE_STYLES[tone])}>
       {tasks.length === 0 ? (
-        <p className="flex items-center gap-2 px-5 py-4 text-sm text-stone-700">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-green-600" />
-          All maintenance is up to date
-        </p>
+        <div className="flex items-center justify-between gap-2 px-5 py-4 text-sm text-stone-700">
+          <p className="flex items-center gap-2">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-green-600" />
+            All maintenance is up to date
+          </p>
+          {seeAll}
+        </div>
       ) : (
         <>
-          <p className={cx('px-5 pt-4 text-sm font-semibold', tone === 'red' ? 'text-red-800' : 'text-amber-800')}>
-            {tasks.length} task{tasks.length > 1 ? 's' : ''} need{tasks.length > 1 ? '' : 's'} attention
-          </p>
+          <div className="flex items-center justify-between gap-2 px-5 pt-4">
+            <p className={cx('text-sm font-semibold', tone === 'red' ? 'text-red-800' : 'text-amber-800')}>
+              {tasks.length} task{tasks.length > 1 ? 's' : ''} need{tasks.length > 1 ? '' : 's'} attention
+            </p>
+            {seeAll}
+          </div>
           <ul className="mt-2 divide-y divide-stone-900/5 px-5 pb-2">
             {tasks.map((t) => (
               <li key={t.task} className="flex items-center justify-between py-2.5 text-sm">
